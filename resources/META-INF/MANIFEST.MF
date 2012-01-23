@@ -1,0 +1,10 @@
+MIDlet-Name: The2012Robot
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: FIRST
+MIDlet-1: The2012Robot, , frc.t4069.robots.The2012Robot
+MicroEdition-Profile: IMP-1.0
+MicroEdition-Configuration: CLDC-1.1
+
+
+
+
