@@ -4,22 +4,12 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.t4069.utils.GameController;
 
 public class OI {
-	public static final int JOYSTICK1_PORT = 1;
-	public static final int JOYSTICK2_PORT = 2;
-	public static final boolean GAMECONTROLLER = true;
+	public static final int GCPORT = 1;
 
 	private GameController gc;
-	private Joystick j1;
-	private Joystick j2;
 
 	public OI() {
-		if (GAMECONTROLLER) {
-			j1 = new Joystick(JOYSTICK1_PORT);
-			gc = new GameController(j1);
-		} else {
-			j1 = new Joystick(JOYSTICK1_PORT);
-			j2 = new Joystick(JOYSTICK2_PORT);
-		}
+		gc = new GameController(new Joystick(GCPORT));
 	}
 
 	public GameController getController() {

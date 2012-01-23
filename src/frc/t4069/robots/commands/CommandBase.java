@@ -2,6 +2,7 @@ package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.t4069.robots.OI;
+import frc.t4069.robots.subsystems.DriveTrain;
 
 /**
  * The base for all commands. All atomic commands should subclass CommandBase.
@@ -12,9 +13,7 @@ import frc.t4069.robots.OI;
 public abstract class CommandBase extends Command {
 
 	public static OI oi;
-
-	// Create a single static instance of all of your subsystems
-	// public static DriveTrain driveTrain = new DriveTrain();
+	public static DriveTrain drivetrain = new DriveTrain();
 
 	public static void init() {
 		// This MUST be here. If the OI creates Commands (which it very likely
@@ -24,8 +23,6 @@ public abstract class CommandBase extends Command {
 		// news. Don't move it.
 		oi = new OI();
 
-		// Show what command your subsystem is running on the SmartDashboard
-		// SmartDashboard.putData(driveTrain);
 	}
 
 	public CommandBase(String name) {

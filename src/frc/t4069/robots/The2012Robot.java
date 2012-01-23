@@ -1,13 +1,17 @@
 package frc.t4069.robots;
 
+import java.io.IOException;
+
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Jaguar;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import frc.t4069.robots.subsystems.DriveTrain;
+import frc.t4069.robots.commands.CommandBase;
+import frc.t4069.robots.commands.DriveWithGameController;
 import frc.t4069.utils.GameController;
-import frc.t4069.utils.math.Point;
+import frc.t4069.utils.networking.CommLink;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -18,13 +22,7 @@ import frc.t4069.utils.math.Point;
  */
 public class The2012Robot extends IterativeRobot {
 
-	Command autonomousCommand;
-	GameController gc = new GameController(new Joystick(1));
-	DriveTrain drive;
-	Jaguar leftRearJaguar;
-	Jaguar rightRearJaguar;
-	Jaguar leftForwardJaguar;
-	Jaguar rightForwardJaguar;
+	Command driveWithController;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -33,16 +31,11 @@ public class The2012Robot extends IterativeRobot {
 
 	public void robotInit() {
 		// instantiate the command used for the autonomous period
-		// autonomousCommand = new ExampleCommand();
+		driveWithController = new DriveWithGameController();
 
 		// Initialize all subsystems
-		// CommandBase.init();
-		leftRearJaguar = new Jaguar(RobotMap.LEFT_BACK_MOTOR);
-		leftForwardJaguar = new Jaguar(RobotMap.LEFT_FORWARD_MOTOR);
-		rightRearJaguar = new Jaguar(RobotMap.RIGHT_BACK_MOTOR);
-		rightForwardJaguar = new Jaguar(RobotMap.RIGHT_FORWARD_MOTOR);
-		drive = new DriveTrain(leftRearJaguar, rightRearJaguar,
-				leftForwardJaguar, rightForwardJaguar);
+		CommandBase.init();
+
 	}
 
 	public void autonomousInit() {
@@ -59,11 +52,7 @@ public class The2012Robot extends IterativeRobot {
 	}
 
 	public void teleopInit() {
-		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
-		// autonomousCommand.cancel();
+		driveWithController.start();
 	}
 
 	/**
@@ -71,7 +60,21 @@ public class The2012Robot extends IterativeRobot {
 	 */
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
-		Point rightStick = gc.getRightStick();
-		drive.arcadeDrive(rightStick.y, rightStick.x);
+		if (CommandBase.oi.getController().getButton(GameController.BTN_A)) {
+			JSONObject jo = new JSONObject();
+			try {
+				jo.put("test", "1");
+				jo.put("test2", "2");
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				CommLink.putData(jo);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

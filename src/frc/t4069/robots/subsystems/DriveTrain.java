@@ -4,6 +4,7 @@ import java.util.Date;
 
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import frc.t4069.robots.RobotMap;
 
 /**
  * RobotDrive is obviously too complicated, amirite?
@@ -17,9 +18,16 @@ public class DriveTrain extends Subsystem {
 	private Jaguar m_leftForwardJaguar;
 	private Jaguar m_rightForwardJaguar;
 
-	private static double RC = 100;
+	private static double RC = 100; // low pass filter constant
 
 	private double m_limit = 1.0;
+
+	public DriveTrain() {
+		this(new Jaguar(RobotMap.LEFT_BACK_MOTOR), new Jaguar(
+				RobotMap.RIGHT_BACK_MOTOR), new Jaguar(
+				RobotMap.LEFT_FORWARD_MOTOR), new Jaguar(
+				RobotMap.RIGHT_FORWARD_MOTOR));
+	}
 
 	public DriveTrain(Jaguar leftRearJaguar, Jaguar rightRearJaguar,
 			Jaguar leftForwardJaguar, Jaguar rightForwardJaguar) {
@@ -80,7 +88,9 @@ public class DriveTrain extends Subsystem {
 		}
 		if (moveValue > 0.0) {
 			if (rotateValue > 0.0) {
-				rightMotorSpeed = moveValue + rotateValue; // May need to switch the right and left...
+				rightMotorSpeed = moveValue + rotateValue; // May need to switch
+															// the right and
+															// left...
 				leftMotorSpeed = Math.max(moveValue, rotateValue);
 			} else {
 				rightMotorSpeed = Math.max(moveValue, -rotateValue);
