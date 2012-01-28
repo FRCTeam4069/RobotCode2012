@@ -18,9 +18,13 @@ public class DriveTrain extends Subsystem {
 	private Jaguar m_leftForwardJaguar;
 	private Jaguar m_rightForwardJaguar;
 
-	private static double RC = 100; // low pass filter constant
+	private static double RC = 400; // low pass filter constant
 
 	private double m_limit = 1.0;
+
+	public static double getRC() {
+		return RC;
+	}
 
 	public DriveTrain() {
 		this(new Jaguar(RobotMap.LEFT_BACK_MOTOR), new Jaguar(
@@ -47,6 +51,26 @@ public class DriveTrain extends Subsystem {
 	private static double rightOld = 0;
 	private static long rightLastTime = 0;
 
+	/**
+	 * Sets an RC value. Temporary solution.
+	 * 
+	 * @param rc If -1, no change.
+	 */
+	public static void setRC(double rc) {
+		if (rc != -1) RC = rc;
+	}
+
+	public void hardBreak() {
+		leftOld = 0;
+		rightOld = 0;
+		leftLastTime = new Date().getTime();
+		rightLastTime = leftLastTime;
+		m_leftRearJaguar.set(0);
+		m_leftForwardJaguar.set(0);
+		m_rightRearJaguar.set(0);
+		m_rightForwardJaguar.set(0);
+	}
+
 	public void tankDrive(double leftSpeed, double rightSpeed) {
 		leftSpeed *= m_limit;
 		rightSpeed *= m_limit;
@@ -65,9 +89,14 @@ public class DriveTrain extends Subsystem {
 	}
 
 	public static double lp(double current, double old, double lastTime) {
+		return lp(current, old, lastTime, RC);
+	}
+
+	public static double lp(double current, double old, double lastTime,
+			double rc) {
 		if (lastTime > 0) {
 			double a = new Date().getTime() - lastTime;
-			a /= (a + RC);
+			a /= (a + rc);
 			old = a * current + (1 - a) * old;
 		}
 		return old;
@@ -76,36 +105,32 @@ public class DriveTrain extends Subsystem {
 	public void arcadeDrive(double moveValue, double rotateValue) {
 		double leftMotorSpeed;
 		double rightMotorSpeed;
-		if (moveValue >= 0.0) {
+
+		if (moveValue >= 0.0)
 			moveValue = (moveValue * moveValue);
-		} else {
+		else
 			moveValue = -(moveValue * moveValue);
-		}
-		if (rotateValue >= 0.0) {
+		if (rotateValue >= 0.0)
 			rotateValue = (rotateValue * rotateValue);
-		} else {
+		else
 			rotateValue = -(rotateValue * rotateValue);
-		}
+
 		if (moveValue > 0.0) {
 			if (rotateValue > 0.0) {
-				rightMotorSpeed = moveValue + rotateValue; // May need to switch
-															// the right and
-															// left...
+				rightMotorSpeed = moveValue - rotateValue;
 				leftMotorSpeed = Math.max(moveValue, rotateValue);
 			} else {
 				rightMotorSpeed = Math.max(moveValue, -rotateValue);
 				leftMotorSpeed = moveValue + rotateValue;
 			}
+		} else if (rotateValue > 0.0) {
+			rightMotorSpeed = -Math.max(-moveValue, rotateValue);
+			leftMotorSpeed = moveValue + rotateValue;
 		} else {
-			if (rotateValue > 0.0) {
-				rightMotorSpeed = -Math.max(-moveValue, rotateValue);
-				leftMotorSpeed = moveValue + rotateValue;
-			} else {
-				rightMotorSpeed = moveValue - rotateValue;
-				leftMotorSpeed = -Math.max(-moveValue, -rotateValue);
-			}
+			rightMotorSpeed = moveValue - rotateValue;
+			leftMotorSpeed = -Math.max(-moveValue, -rotateValue);
 		}
-		tankDrive(leftMotorSpeed, rightMotorSpeed);
+		tankDrive(leftMotorSpeed, -1 * rightMotorSpeed);
 	}
 
 	public void initDefaultCommand() {
