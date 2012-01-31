@@ -13,10 +13,8 @@ public class DriveTrain extends Subsystem {
 	// Put methods for controlling this subsystem
 	// here. Call these from Commands.
 
-	private Jaguar m_leftRearJaguar;
-	private Jaguar m_rightRearJaguar;
-	private Jaguar m_leftForwardJaguar;
-	private Jaguar m_rightForwardJaguar;
+	private Jaguar m_leftJaguar;
+	private Jaguar m_rightJaguar;
 
 	private static double RC = 400; // low pass filter constant
 
@@ -27,19 +25,14 @@ public class DriveTrain extends Subsystem {
 	}
 
 	public DriveTrain() {
-		this(new Jaguar(RobotMap.LEFT_BACK_MOTOR), new Jaguar(
-				RobotMap.RIGHT_BACK_MOTOR), new Jaguar(
-				RobotMap.LEFT_FORWARD_MOTOR), new Jaguar(
-				RobotMap.RIGHT_FORWARD_MOTOR));
+		this(new Jaguar(RobotMap.LEFT_MOTOR), new Jaguar(RobotMap.RIGHT_MOTOR));
 	}
 
-	public DriveTrain(Jaguar leftRearJaguar, Jaguar rightRearJaguar,
-			Jaguar leftForwardJaguar, Jaguar rightForwardJaguar) {
+	public DriveTrain(Jaguar leftJaguar, Jaguar rightJaguar) {
 		super("DriveTrain");
-		m_leftRearJaguar = leftRearJaguar;
-		m_rightRearJaguar = rightRearJaguar;
-		m_leftForwardJaguar = leftForwardJaguar;
-		m_rightForwardJaguar = rightForwardJaguar;
+		m_leftJaguar = leftJaguar;
+		m_rightJaguar = rightJaguar;
+
 	}
 
 	public void limitSpeed(double limit) {
@@ -65,14 +58,12 @@ public class DriveTrain extends Subsystem {
 		rightOld = 0;
 		leftLastTime = new Date().getTime();
 		rightLastTime = leftLastTime;
-		m_leftRearJaguar.set(0);
-		m_leftForwardJaguar.set(0);
-		m_rightRearJaguar.set(0);
-		m_rightForwardJaguar.set(0);
+		m_leftJaguar.set(0);
+		m_rightJaguar.set(0);
 	}
 
 	public void tankDrive(double leftSpeed, double rightSpeed) {
-		leftSpeed *= m_limit;
+		leftSpeed *= -m_limit;
 		rightSpeed *= m_limit;
 		leftSpeed = lp(leftSpeed, leftOld, leftLastTime);
 		rightSpeed = lp(rightSpeed, rightOld, rightLastTime);
@@ -82,10 +73,8 @@ public class DriveTrain extends Subsystem {
 		leftLastTime = new Date().getTime();
 		rightLastTime = leftLastTime;
 
-		m_leftRearJaguar.set(leftSpeed);
-		m_leftForwardJaguar.set(leftSpeed);
-		m_rightRearJaguar.set(rightSpeed);
-		m_rightForwardJaguar.set(rightSpeed);
+		m_leftJaguar.set(leftSpeed);
+		m_rightJaguar.set(rightSpeed);
 	}
 
 	public static double lp(double current, double old, double lastTime) {
@@ -117,20 +106,20 @@ public class DriveTrain extends Subsystem {
 
 		if (moveValue > 0.0) {
 			if (rotateValue > 0.0) {
-				rightMotorSpeed = moveValue - rotateValue;
-				leftMotorSpeed = Math.max(moveValue, rotateValue);
+				leftMotorSpeed = moveValue - rotateValue;
+				rightMotorSpeed = Math.max(moveValue, rotateValue);
 			} else {
-				rightMotorSpeed = Math.max(moveValue, -rotateValue);
-				leftMotorSpeed = moveValue + rotateValue;
+				leftMotorSpeed = Math.max(moveValue, -rotateValue);
+				rightMotorSpeed = moveValue + rotateValue;
 			}
 		} else if (rotateValue > 0.0) {
-			rightMotorSpeed = -Math.max(-moveValue, rotateValue);
-			leftMotorSpeed = moveValue + rotateValue;
+			leftMotorSpeed = -Math.max(-moveValue, rotateValue);
+			rightMotorSpeed = moveValue + rotateValue;
 		} else {
-			rightMotorSpeed = moveValue - rotateValue;
-			leftMotorSpeed = -Math.max(-moveValue, -rotateValue);
+			leftMotorSpeed = moveValue - rotateValue;
+			rightMotorSpeed = -Math.max(-moveValue, -rotateValue);
 		}
-		tankDrive(leftMotorSpeed, -1 * rightMotorSpeed);
+		tankDrive(leftMotorSpeed, rightMotorSpeed);
 	}
 
 	public void initDefaultCommand() {

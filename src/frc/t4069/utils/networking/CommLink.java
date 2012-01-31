@@ -20,7 +20,7 @@ public class CommLink {
 
 	}
 
-	public static Value getCommand() throws IOException {
+	public static Value getCommand() {
 		return getCommand(DEFAULT_URL);
 	}
 
@@ -62,17 +62,16 @@ public class CommLink {
 		return value;
 	}
 
-	public static Value getCommand(String url) throws IOException {
+	public static Value getCommand(String url) {
 		url += "q/commands";
 		return get(url);
 	}
 
-	public static boolean putData(JSONObject data) throws IOException {
+	public static boolean putData(JSONObject data) {
 		return putData(DEFAULT_URL, data);
 	}
 
-	public static boolean putData(String url, JSONObject data)
-			throws IOException {
+	public static boolean putData(String url, JSONObject data) {
 		url += "q/data";
 		String jsonString = data.toString();
 

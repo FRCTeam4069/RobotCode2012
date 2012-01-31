@@ -3,7 +3,6 @@ package frc.t4069.robots.subsystems;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
-import frc.t4069.utils.Logger;
 
 public class CameraMount extends Subsystem {
 
@@ -22,12 +21,10 @@ public class CameraMount extends Subsystem {
 
 	public void setTilt(double value) {
 		m_tilt.set(value);
-		Logger.d("Tilt: " + value);
 	}
 
 	public void setPan(double value) {
 		m_pan.set(value);
-		Logger.d("Pan: " + value);
 	}
 
 	protected void initDefaultCommand() {

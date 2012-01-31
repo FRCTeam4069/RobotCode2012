@@ -18,6 +18,11 @@ public class DoDebug extends CommandBase {
 		double x = (leftStick.x + 1) / 2.0;
 		CommandBase.cameraMount.setTilt(y);
 		CommandBase.cameraMount.setPan(x);
+
+		if (gc.getButton(GameController.BTN_A))
+			CommandBase.drivetrain.tankDrive(0.5, 0);
+		else if (gc.getButton(GameController.BTN_B))
+			CommandBase.drivetrain.tankDrive(0, 0.5);
 	}
 
 	protected boolean isFinished() {

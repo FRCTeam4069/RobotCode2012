@@ -1,6 +1,13 @@
 package frc.t4069.utils;
 
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+
+import frc.t4069.utils.networking.CommLink;
+
 public class Logger {
+	public final static boolean USE_MEDIATOR = false;
+
 	public final static void d(String msg) {
 		Logger.output("Debug", msg);
 	}
@@ -22,6 +29,16 @@ public class Logger {
 	}
 
 	private final static void output(String prefix, String msg) {
-		System.out.println("[" + prefix + "] " + msg);
+		msg = "[" + prefix + "] " + msg;
+		System.out.println(msg);
+		if (USE_MEDIATOR) {
+			JSONObject o = new JSONObject();
+			try {
+				o.put("data", msg);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			CommLink.addKV("debugoutput", o);
+		}
 	}
 }
