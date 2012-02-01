@@ -1,13 +1,13 @@
 package frc.t4069.robots.subsystems;
 
 import java.util.Date;
-import java.util.Random;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
+import frc.t4069.utils.math.DateRandom;
 
 public class BallPickup extends Subsystem {
 
@@ -42,10 +42,10 @@ public class BallPickup extends Subsystem {
 			if (ballSwitch.get() && currentTime - secsFromSwitch2 < 3
 					|| ballSwitch.get() && currentTime - secsFromSwitch3 < 3) {
 				m_pickupMotor.set(0.6);
-				m_armMotor.set(-0.4 * rand.nextDouble());
+				m_armMotor.set(-0.4 * rand.nextDouble(0.4, 0.5));
 
 			} else if (ballSwitch2.get() && ballSwitch3.get()) {
-				m_armMotor.set(-0.6 * rand.nextDouble());
+				m_armMotor.set(-0.6 * rand.nextDouble(0.1, 1.2));
 			}
 		} else {
 			m_armMotor.set(1.0);
@@ -54,7 +54,7 @@ public class BallPickup extends Subsystem {
 
 	}
 
-	private Random rand = new Random(new Date().getTime());
+	private DateRandom rand = new DateRandom();
 	private int secsFromSwitch1, secsFromSwitch2, secsFromSwitch3, currentTime;
 	private DigitalInput ballSwitch = new DigitalInput(RobotMap.BALL_SWITCH_1);
 	private DigitalInput ballSwitch2 = new DigitalInput(RobotMap.BALL_SWITCH_2);
