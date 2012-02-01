@@ -2,6 +2,7 @@ package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.command.Command;
+import frc.t4069.robots.subsystems.BallPickup;
 import frc.t4069.robots.subsystems.DriveTrain;
 import frc.t4069.utils.GameController;
 import frc.t4069.utils.math.Point;
@@ -10,6 +11,7 @@ public class DriveWithGameController extends Command {
 
 	public DriveWithGameController() {
 		requires(CommandBase.drivetrain);
+		requires(CommandBase.ballpickup);
 	}
 
 	protected void initialize() {
@@ -17,8 +19,10 @@ public class DriveWithGameController extends Command {
 
 	}
 
+	@SuppressWarnings("unused")
 	protected void execute() {
 		GameController gc = CommandBase.oi.getController();
+		BallPickup bp = new BallPickup();
 		Point rightStick = gc.getRightStick();
 		Point leftStick = gc.getLeftStick();
 		DriverStation ds = DriverStation.getInstance();
@@ -28,9 +32,11 @@ public class DriveWithGameController extends Command {
 		if (gc.getButton(GameController.BTN_RB)
 				|| gc.getButton(GameController.BTN_LB))
 			CommandBase.drivetrain.hardBreak();
-		else
-			CommandBase.drivetrain.arcadeDrive(gc.getTrigger(), rightStick.x
-					* sensitivity);
+		else CommandBase.drivetrain.arcadeDrive(gc.getTrigger(), rightStick.x
+				* sensitivity);
+		if (gc.getButton(GameController.BTN_X)) {
+			bp.Lower();
+		}
 	}
 
 	protected boolean isFinished() {

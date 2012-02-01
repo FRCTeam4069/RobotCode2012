@@ -2,6 +2,7 @@ package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.t4069.robots.OI;
+import frc.t4069.robots.subsystems.BallPickup;
 import frc.t4069.robots.subsystems.CameraMount;
 import frc.t4069.robots.subsystems.DriveTrain;
 
@@ -15,7 +16,7 @@ public abstract class CommandBase extends Command {
 
 	public static OI oi;
 	public static DriveTrain drivetrain = new DriveTrain();
-
+	public static BallPickup ballpickup = new BallPickup();
 	public static CameraMount cameraMount = new CameraMount();
 
 	public static void init() {
