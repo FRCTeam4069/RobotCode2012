@@ -12,9 +12,9 @@ import frc.t4069.robots.RobotMap;
 public class BallPickup extends Subsystem {
 
 	public BallPickup() {
+		super("BallPickup");
 		m_pickupMotor = new Jaguar(3);
 		m_armMotor = new Jaguar(4);
-		rand.setSeed(new Date().getTime());
 	}
 
 	public void initDefaultCommand() {
@@ -54,7 +54,7 @@ public class BallPickup extends Subsystem {
 
 	}
 
-	private Random rand = new Random();
+	private Random rand = new Random(new Date().getTime());
 	private int secsFromSwitch1, secsFromSwitch2, secsFromSwitch3, currentTime;
 	private DigitalInput ballSwitch = new DigitalInput(RobotMap.BALL_SWITCH_1);
 	private DigitalInput ballSwitch2 = new DigitalInput(RobotMap.BALL_SWITCH_2);
