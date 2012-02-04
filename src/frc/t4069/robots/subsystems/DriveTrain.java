@@ -32,7 +32,6 @@ public class DriveTrain extends Subsystem {
 		super("DriveTrain");
 		m_leftJaguar = leftJaguar;
 		m_rightJaguar = rightJaguar;
-
 	}
 
 	public void limitSpeed(double limit) {
@@ -64,7 +63,7 @@ public class DriveTrain extends Subsystem {
 
 	public void tankDrive(double leftSpeed, double rightSpeed) {
 		leftSpeed *= -m_limit;
-		rightSpeed *= m_limit;
+		rightSpeed *= 0.972 * m_limit; // Rightside is more powerful than left.
 		leftSpeed = lp(leftSpeed, leftOld, leftLastTime);
 		rightSpeed = lp(rightSpeed, rightOld, rightLastTime);
 
@@ -72,6 +71,8 @@ public class DriveTrain extends Subsystem {
 		rightOld = rightSpeed;
 		leftLastTime = new Date().getTime();
 		rightLastTime = leftLastTime;
+
+		// Logger.d("Left: " + leftSpeed + " Right: " + rightSpeed);
 
 		m_leftJaguar.set(leftSpeed);
 		m_rightJaguar.set(rightSpeed);

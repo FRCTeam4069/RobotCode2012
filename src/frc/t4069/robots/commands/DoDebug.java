@@ -1,28 +1,21 @@
 package frc.t4069.robots.commands;
 
-import frc.t4069.utils.GameController;
-import frc.t4069.utils.math.Point;
+import edu.wpi.first.wpilibj.ADXL345_I2C;
+import edu.wpi.first.wpilibj.AnalogChannel;
 
 public class DoDebug extends CommandBase {
 
+	AnalogChannel sonar;
+	ADXL345_I2C accelerometer;
+
 	protected void initialize() {
 		// TODO Auto-generated method stub
+		// sonar = new AnalogChannel(1);
+		// accelerometer = new ADXL345_I2C(1, ADXL345_I2C.DataFormat_Range.k2G);
 
 	}
 
 	protected void execute() {
-		GameController gc = CommandBase.oi.getController();
-		Point leftStick = gc.getLeftStick();
-		// TODO Auto-generated method stub
-		double y = (leftStick.y + 1) / 2.0;
-		double x = (leftStick.x + 1) / 2.0;
-		CommandBase.cameraMount.setTilt(y);
-		CommandBase.cameraMount.setPan(x);
-
-		if (gc.getButton(GameController.BTN_A))
-			CommandBase.drivetrain.tankDrive(0.5, 0);
-		else if (gc.getButton(GameController.BTN_B))
-			CommandBase.drivetrain.tankDrive(0, 0.5);
 	}
 
 	protected boolean isFinished() {

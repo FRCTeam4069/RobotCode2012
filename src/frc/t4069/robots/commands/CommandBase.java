@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.command.Command;
 import frc.t4069.robots.OI;
 import frc.t4069.robots.subsystems.CameraMount;
 import frc.t4069.robots.subsystems.DriveTrain;
+import frc.t4069.robots.subsystems.Sensors;
 
 /**
  * The base for all commands. All atomic commands should subclass CommandBase.
@@ -15,7 +16,7 @@ public abstract class CommandBase extends Command {
 
 	public static OI oi;
 	public static DriveTrain drivetrain = new DriveTrain();
-
+	public static Sensors sensors = new Sensors();
 	public static CameraMount cameraMount = new CameraMount();
 
 	public static void init() {
@@ -25,7 +26,6 @@ public abstract class CommandBase extends Command {
 		// yet. Thus, their requires() statements may grab null pointers. Bad
 		// news. Don't move it.
 		oi = new OI();
-
 	}
 
 	public CommandBase(String name) {

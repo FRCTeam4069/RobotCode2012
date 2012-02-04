@@ -10,6 +10,7 @@ public class DriveWithGameController extends Command {
 
 	public DriveWithGameController() {
 		requires(CommandBase.drivetrain);
+		requires(CommandBase.cameraMount);
 	}
 
 	protected void initialize() {
@@ -19,18 +20,29 @@ public class DriveWithGameController extends Command {
 
 	protected void execute() {
 		GameController gc = CommandBase.oi.getController();
-		Point rightStick = gc.getRightStick();
 		Point leftStick = gc.getLeftStick();
+		Point rightStick = gc.getRightStick();
 		DriverStation ds = DriverStation.getInstance();
 		double rc = ds.getAnalogIn(1) * 1000;
 		double sensitivity = ds.getAnalogIn(2) / 5.0;
 		DriveTrain.setRC(rc);
+
+		double y = (rightStick.y + 1) / 4.0 + 0.25;
+		double x = (rightStick.x + 1) / 2.0;
+		CommandBase.cameraMount.setTilt(y);
+		CommandBase.cameraMount.setPan(x);
+
 		if (gc.getButton(GameController.BTN_RB)
 				|| gc.getButton(GameController.BTN_LB))
 			CommandBase.drivetrain.hardBreak();
 		else
-			CommandBase.drivetrain.arcadeDrive(gc.getTrigger(), rightStick.x
+			CommandBase.drivetrain.arcadeDrive(gc.getTrigger(), leftStick.x
 					* sensitivity);
+	}
+
+	protected void interrupted() {
+		// TODO Auto-generated method stub
+
 	}
 
 	protected boolean isFinished() {
@@ -39,11 +51,6 @@ public class DriveWithGameController extends Command {
 	}
 
 	protected void end() {
-		// TODO Auto-generated method stub
-
-	}
-
-	protected void interrupted() {
 		// TODO Auto-generated method stub
 
 	}
