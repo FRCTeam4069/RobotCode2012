@@ -12,10 +12,8 @@ public class DateRandom {
 
 	public double nextDouble(double floor, double ceiling) {
 		double temp;
-		double returnval;
 		temp = rand.nextDouble();
-		temp = temp * (ceiling - floor) + floor;
-		returnval = temp;
+		temp *= (ceiling - floor) + floor;
 		return temp;
 	}
 
