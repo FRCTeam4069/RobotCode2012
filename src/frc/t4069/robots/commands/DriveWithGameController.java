@@ -36,6 +36,8 @@ public class DriveWithGameController extends Command {
 				* sensitivity);
 		if (gc.getButton(GameController.BTN_X)) {
 			bp.Lower();
+		} else if (gc.getButton(GameController.BTN_B)) {
+			bp.Raise(1.0);
 		} else {
 			bp.Raise(0.5);
 		}
