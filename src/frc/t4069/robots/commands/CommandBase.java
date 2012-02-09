@@ -2,6 +2,7 @@ package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.t4069.robots.OI;
+import frc.t4069.robots.subsystems.BallPickupArm;
 import frc.t4069.robots.subsystems.CameraMount;
 import frc.t4069.robots.subsystems.DriveTrain;
 import frc.t4069.robots.subsystems.Sensors;
@@ -18,6 +19,7 @@ public abstract class CommandBase extends Command {
 	public static DriveTrain drivetrain = new DriveTrain();
 	public static Sensors sensors = new Sensors();
 	public static CameraMount cameraMount = new CameraMount();
+	public static BallPickupArm pickupArm = new BallPickupArm();
 
 	public static void init() {
 		// This MUST be here. If the OI creates Commands (which it very likely
