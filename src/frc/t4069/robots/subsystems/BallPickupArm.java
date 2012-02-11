@@ -1,13 +1,19 @@
 package frc.t4069.robots.subsystems;
 
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
+import frc.t4069.utils.math.LowPassFilter;
 
 public class BallPickupArm extends Subsystem {
 
 	private Relay m_motor1;
 	private Relay m_motor2;
+	private Victor m_roller;
+	private LowPassFilter m_rollerLPF = new LowPassFilter(RC);
+
+	private static final int RC = 250;
 
 	public BallPickupArm() {
 		this(RobotMap.PICKUP_ARM_MOTOR_1, RobotMap.PICKUP_ARM_MOTOR_2);
@@ -16,6 +22,12 @@ public class BallPickupArm extends Subsystem {
 	public BallPickupArm(int motor1channel, int motor2channel) {
 		m_motor1 = new Relay(motor1channel);
 		m_motor2 = new Relay(motor2channel);
+		m_roller = new Victor(5);
+	}
+
+	public void runRoller(double speed) {
+		speed = m_rollerLPF.calculate(speed);
+		m_roller.set(speed);
 	}
 
 	public void forward() {

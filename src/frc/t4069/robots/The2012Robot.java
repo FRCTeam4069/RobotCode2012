@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import frc.t4069.robots.commands.CommandBase;
 import frc.t4069.robots.commands.DoDebug;
 import frc.t4069.robots.commands.DriveWithGameController;
+import frc.t4069.utils.Logger;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -28,10 +29,10 @@ public class The2012Robot extends IterativeRobot {
 		// instantiate the command used for the autonomous period
 		driveWithController = new DriveWithGameController();
 		doDebugInfo = new DoDebug();
-		doDebugInfo.start();
 		// Initialize all subsystems
 		CommandBase.init();
-
+		doDebugInfo.start();
+		Logger.i("Robot initialized.");
 	}
 
 	public void autonomousInit() {
