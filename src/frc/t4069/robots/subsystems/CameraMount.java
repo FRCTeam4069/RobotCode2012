@@ -1,10 +1,9 @@
 package frc.t4069.robots.subsystems;
 
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
 
-public class CameraMount extends Subsystem {
+public class CameraMount {
 
 	private Servo m_tilt;
 	private Servo m_pan;
@@ -25,11 +24,6 @@ public class CameraMount extends Subsystem {
 
 	public void setPan(double value) {
 		m_pan.set(value);
-	}
-
-	protected void initDefaultCommand() {
-		// TODO Auto-generated method stub
-
 	}
 
 }
