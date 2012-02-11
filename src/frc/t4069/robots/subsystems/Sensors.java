@@ -3,12 +3,11 @@ package frc.t4069.robots.subsystems;
 import edu.wpi.first.wpilibj.ADXL345_I2C;
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.Gyro;
-import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
 import frc.t4069.utils.MaxbotixSonar;
 import frc.t4069.utils.math.Point3D;
 
-public class Sensors extends Subsystem {
+public class Sensors {
 
 	public ADXL345_I2C accelerometer;
 	public Gyro gyroscope;
@@ -46,11 +45,6 @@ public class Sensors extends Subsystem {
 				ADXL345_I2C.DataFormat_Range.k2G);
 		gyroscope = new Gyro(gyroscopeChannel);
 		sonar = new MaxbotixSonar(sonarChannel);
-	}
-
-	protected void initDefaultCommand() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -1,14 +1,13 @@
 package frc.t4069.robots.subsystems;
 
 import edu.wpi.first.wpilibj.Jaguar;
-import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
 import frc.t4069.utils.math.LowPassFilter;
 
 /**
  * RobotDrive is obviously too complicated, amirite?
  */
-public class DriveTrain extends Subsystem {
+public class DriveTrain {
 	// Put methods for controlling this subsystem
 	// here. Call these from Commands.
 
@@ -26,7 +25,6 @@ public class DriveTrain extends Subsystem {
 	}
 
 	public DriveTrain(Jaguar leftJaguar, Jaguar rightJaguar) {
-		super("DriveTrain");
 		m_leftJaguar = leftJaguar;
 		m_rightJaguar = rightJaguar;
 	}
@@ -80,10 +78,5 @@ public class DriveTrain extends Subsystem {
 			rightMotorSpeed = -Math.max(-moveValue, -rotateValue);
 		}
 		tankDrive(leftMotorSpeed, rightMotorSpeed);
-	}
-
-	public void initDefaultCommand() {
-		// Set the default command for a subsystem here.
-		// setDefaultCommand(new MySpecialCommand());
 	}
 }

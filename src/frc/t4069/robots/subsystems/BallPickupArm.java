@@ -2,11 +2,10 @@ package frc.t4069.robots.subsystems;
 
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Victor;
-import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.t4069.robots.RobotMap;
 import frc.t4069.utils.math.LowPassFilter;
 
-public class BallPickupArm extends Subsystem {
+public class BallPickupArm {
 
 	private Relay m_motor1;
 	private Relay m_motor2;
@@ -43,11 +42,6 @@ public class BallPickupArm extends Subsystem {
 	public void stop() {
 		m_motor1.set(Relay.Value.kOff);
 		m_motor2.set(Relay.Value.kOff);
-	}
-
-	protected void initDefaultCommand() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

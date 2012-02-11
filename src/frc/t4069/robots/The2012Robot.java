@@ -32,7 +32,7 @@ public class The2012Robot extends IterativeRobot {
 		// Initialize all subsystems
 		CommandBase.init();
 		doDebugInfo.start();
-		Logger.i("Robot initialized.");
+		Logger.i("Robot initialized. Author is " + Version.author);
 	}
 
 	public void autonomousInit() {
@@ -40,12 +40,16 @@ public class The2012Robot extends IterativeRobot {
 		// autonomousCommand.start();
 	}
 
-	/**
-	 * This function is called periodically during autonomous
-	 */
-
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
+	}
+
+	public void disabledInit() {
+
+	}
+
+	public void disabledPeriodic() {
+
 	}
 
 	public void teleopInit() {

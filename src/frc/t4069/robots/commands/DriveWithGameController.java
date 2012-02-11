@@ -8,9 +8,7 @@ import frc.t4069.utils.math.Point;
 public class DriveWithGameController extends Command {
 
 	public DriveWithGameController() {
-		requires(CommandBase.drivetrain);
-		requires(CommandBase.cameraMount);
-		requires(CommandBase.pickupArm);
+
 	}
 
 	protected void initialize() {
@@ -20,11 +18,10 @@ public class DriveWithGameController extends Command {
 
 	protected void execute() {
 		GameController gc = CommandBase.oi.getController();
-		Point rightStick = gc.getRightStick();
 		DriverStation ds = DriverStation.getInstance();
 		double sensitivity = ds.getAnalogIn(2) / 5.0;
 
-		processCamera(rightStick);
+		processCamera(gc);
 		processDriveTrain(gc, sensitivity);
 		processArm(gc);
 
@@ -44,18 +41,19 @@ public class DriveWithGameController extends Command {
 			CommandBase.pickupArm.stop();
 	}
 
-	protected void processDriveTrain(GameController gc, double sensitivity) {
+	protected void processDriveTrain(GameController gc, double turnSensitivity) {
 		if (gc.getButton(GameController.BTN_RB)
 				|| gc.getButton(GameController.BTN_LB))
 			CommandBase.drivetrain.hardBreak();
 		else
 			CommandBase.drivetrain.arcadeDrive(gc.getTrigger(),
-					gc.getLeftStick().x * sensitivity);
+					gc.getLeftStick().x * turnSensitivity);
 	}
 
-	protected void processCamera(Point stick) {
-		double y = (stick.y + 1) / 4.0 + 0.25;
-		double x = (stick.x + 1) / 2.0;
+	protected void processCamera(GameController gc) {
+		Point rightStick = gc.getRightStick();
+		double y = (rightStick.y + 1) / 4.0 + 0.25;
+		double x = (rightStick.x + 1) / 2.0;
 		CommandBase.cameraMount.setTilt(y);
 		CommandBase.cameraMount.setPan(x);
 	}
