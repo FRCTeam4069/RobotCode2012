@@ -1,8 +1,10 @@
 package frc.t4069.robots;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.robots.commands.CommandBase;
 import frc.t4069.robots.commands.DoDebug;
 import frc.t4069.robots.commands.DriveWithGameController;
@@ -20,19 +22,27 @@ public class The2012Robot extends IterativeRobot {
 	Command driveWithController;
 	Command doDebugInfo;
 
+	private DriverStation m_ds;
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 
 	public void robotInit() {
+		m_ds = DriverStation.getInstance();
+
 		// instantiate the command used for the autonomous period
 		driveWithController = new DriveWithGameController();
 		doDebugInfo = new DoDebug();
 		// Initialize all subsystems
+
 		CommandBase.init();
 		doDebugInfo.start();
-		Logger.i("Robot initialized. Author is " + Version.author);
+
+		// For knowing whose code is on the robot.
+		SmartDashboard.putString("Author", Version.author);
+		Logger.i("Robot initialized.");
 	}
 
 	public void autonomousInit() {
@@ -49,6 +59,10 @@ public class The2012Robot extends IterativeRobot {
 	}
 
 	public void disabledPeriodic() {
+
+	}
+
+	public void disabledContinous() {
 
 	}
 
