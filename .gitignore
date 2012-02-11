@@ -3,3 +3,5 @@ build/
 j2meclasses/
 suite/
 .classpath
+doc/
+src/frc/t4069/robots/Version.java

@@ -143,4 +143,14 @@ public class CommLink {
 		else
 			return false;
 	}
+
+	public static boolean addKV(String key, String value) {
+		JSONObject o = new JSONObject();
+		try {
+			o.put("data", value);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return addKV(key, o);
+	}
 }
