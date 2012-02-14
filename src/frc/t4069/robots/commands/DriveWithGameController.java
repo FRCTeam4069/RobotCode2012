@@ -23,7 +23,8 @@ public class DriveWithGameController extends Command {
 
 		processCamera(gc);
 		processDriveTrain(gc, sensitivity);
-		processArm(gc);
+		processArm(gc, ds.getAnalogIn(1) / 5.0);
+		processShooter(gc);
 
 		if (gc.getButton(GameController.BTN_X))
 			CommandBase.pickupArm.runRoller(ds.getAnalogIn(1) / 5.0);
@@ -32,11 +33,15 @@ public class DriveWithGameController extends Command {
 
 	}
 
-	protected void processArm(GameController gc) {
+	private void processShooter(GameController gc) {
+		CommandBase.shooter.set(gc.getButton(GameController.BTN_B) ? 1.0 : 0.0);
+	}
+
+	protected void processArm(GameController gc, double sensitivity) {
 		if (gc.getButton(GameController.BTN_Y))
-			CommandBase.pickupArm.forward();
+			CommandBase.pickupArm.forward(sensitivity);
 		else if (gc.getButton(GameController.BTN_A))
-			CommandBase.pickupArm.reverse();
+			CommandBase.pickupArm.reverse(-sensitivity);
 		else
 			CommandBase.pickupArm.stop();
 	}

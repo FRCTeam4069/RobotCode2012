@@ -6,6 +6,7 @@ import frc.t4069.robots.subsystems.BallPickupArm;
 import frc.t4069.robots.subsystems.CameraMount;
 import frc.t4069.robots.subsystems.DriveTrain;
 import frc.t4069.robots.subsystems.Sensors;
+import frc.t4069.robots.subsystems.Shooter;
 
 /**
  * The base for all commands. All atomic commands should subclass CommandBase.
@@ -20,6 +21,7 @@ public abstract class CommandBase extends Command {
 	public static Sensors sensors = new Sensors();
 	public static CameraMount cameraMount = new CameraMount();
 	public static BallPickupArm pickupArm = new BallPickupArm();
+	public static Shooter shooter = new Shooter();
 
 	public static void init() {
 		// This MUST be here. If the OI creates Commands (which it very likely
