@@ -1,14 +1,18 @@
 package frc.t4069.robots;
 
+import com.sun.squawk.util.MathUtils;
+
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.robots.commands.CommandBase;
-import frc.t4069.robots.commands.DoDebug;
 import frc.t4069.robots.commands.DriveWithGameController;
+import frc.t4069.robots.commands.DriveWithKinect;
 import frc.t4069.utils.Logger;
+import frc.t4069.utils.networking.CommLink;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -19,8 +23,10 @@ import frc.t4069.utils.Logger;
  */
 public class The2012Robot extends IterativeRobot {
 
-	Command driveWithController;
+	DriveWithGameController driveWithController;
 	Command doDebugInfo;
+	Command driveWithKinect;
+	private DigitalInput sensor1;
 
 	private DriverStation m_ds;
 
@@ -33,21 +39,18 @@ public class The2012Robot extends IterativeRobot {
 		m_ds = DriverStation.getInstance();
 
 		// instantiate the command used for the autonomous period
-		driveWithController = new DriveWithGameController();
-		doDebugInfo = new DoDebug();
 		// Initialize all subsystems
 
 		CommandBase.init();
-		doDebugInfo.start();
-
+		driveWithController = new DriveWithGameController();
 		// For knowing whose code is on the robot.
 		SmartDashboard.putString("Author", Version.author);
 		Logger.i("Robot initialized.");
 	}
 
 	public void autonomousInit() {
-		// schedule the autonomous command (example)
-		// autonomousCommand.start();
+		driveWithKinect = new DriveWithKinect();
+		driveWithKinect.start();
 	}
 
 	public void autonomousPeriodic() {
@@ -55,26 +58,44 @@ public class The2012Robot extends IterativeRobot {
 	}
 
 	public void disabledInit() {
-
+		Logger.i("Disabled!");
+		CommLink.consecutiveFailures = 0;
+		driveWithController.stopRoller();
 	}
 
 	public void disabledPeriodic() {
 
 	}
 
-	public void disabledContinous() {
+	public void disabledContinuous() {
 
 	}
 
 	public void teleopInit() {
+
 		driveWithController.start();
 	}
 
 	/**
 	 * This function is called periodically during operator control.
 	 */
+
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
 
+		SmartDashboard.putBoolean("Ball Ready To Shoot",
+				CommandBase.shooter.isBallThere());
+		SmartDashboard.putBoolean("Roller Running",
+				driveWithController.rollerRunning());
+		SmartDashboard.putBoolean("Shooting In Progress",
+				CommandBase.shooter.shootingInProgress());
+
+		if (CommandBase.shooter.isShooterReady())
+			SmartDashboard.putString("Shooter Status", "Ready");
+		else
+			SmartDashboard.putString("Shooter Status", "Not Ready");
+		double shooterVoltage = MathUtils.round(CommandBase.shooter
+				.getVoltage() * 100) / 100.0;
+		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
 	}
 }

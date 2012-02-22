@@ -1,9 +1,9 @@
 package frc.t4069.robots.commands;
 
-
-public class DoDebug extends CommandBase {
+public class AutonomousShooter extends CommandBase {
 
 	protected void initialize() {
+		// TODO Auto-generated method stub
 
 	}
 
