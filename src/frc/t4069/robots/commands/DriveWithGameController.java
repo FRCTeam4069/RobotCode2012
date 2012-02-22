@@ -39,13 +39,14 @@ public class DriveWithGameController extends CommandBase {
 			}
 		});
 
-		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler(){
-			public void buttonUp(){
-				if (m_speedlimit == 1) m_speedlimit = 0.4;
+		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
+			public void buttonUp() {
+				if (m_speedlimit == 1)
+					m_speedlimit = 0.4;
 				else
 					m_speedlimit = 1;
 			}
-		})
+		});
 		processCamera(m_gc);
 		processRoller();
 		processDriveTrain(m_gc, sensitivity);
@@ -68,9 +69,9 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processArm(GameController gc, double sensitivity) {
 		if (gc.getButton(GameController.BTN_Y))
-			pickupArm.setArm(sensitivity);
+			pickupArm.forward();
 		else if (gc.getButton(GameController.BTN_A))
-			pickupArm.setArm(-sensitivity);
+			pickupArm.reverse();
 		else
 			pickupArm.stop();
 	}
