@@ -3,6 +3,7 @@ package frc.t4069.robots.subsystems;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Victor;
 import frc.t4069.robots.RobotMap;
+import frc.t4069.utils.Logger;
 import frc.t4069.utils.math.LowPassFilter;
 
 public class BallPickupArm {
@@ -12,7 +13,7 @@ public class BallPickupArm {
 	private LowPassFilter m_rollerLPF = new LowPassFilter(RC);
 	private LowPassFilter m_armLPF = new LowPassFilter(RC);
 	private DigitalInput m_limitswitch1;
-	public static final double SPEED = 0.2;
+	public static final double SPEED = 0.6;
 
 	private static final int RC = 250;
 
@@ -27,21 +28,13 @@ public class BallPickupArm {
 		m_roller.set(speed);
 	}
 
-	public void forward() {
-		double speed = m_limitswitch1.get() ? 0 : SPEED;
-		m_armMotor.set(speed);
-	}
-
 	public void setArm(double speed) {
+		if (speed < 0) {
+			speed = m_limitswitch1.get() ? 0 : speed;
+			if (speed == 0) Logger.i("Limit switched!");
+		}
+		speed = m_armLPF.calculate(speed);
 		m_armMotor.set(speed);
-	}
-
-	public void reverse() {
-		m_armMotor.set(-SPEED);
-	}
-
-	public void stop() {
-		m_armMotor.set(0);
 	}
 
 }

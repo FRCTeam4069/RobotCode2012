@@ -20,8 +20,7 @@ public class Shooter {
 	}
 
 	public double getVoltage() {
-		return DriverStation.getInstance().getBatteryVoltage()
-				- (2 * m_voltagesensor.getAverageVoltage());
+		return 2 * m_voltagesensor.getAverageVoltage();
 	}
 
 	public boolean isShooterReady() {
