@@ -54,8 +54,7 @@ public class DriveWithGameController extends CommandBase {
 	}
 
 	protected void processArm(GameController gc) {
-		double speed = m_joystickLeft.getY();
-		speed = (speed < 0.000001) ? gc.getRightStick().y : speed;
+		double speed = m_joystickLeft.getRawAxis(2);
 		pickupArm.setArm(-speed / 2.0);
 	}
 
@@ -70,9 +69,11 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processCamera(GameController gc) {
 		// TODO: Sensititivty..g
-		double y = (m_joystickRight.getX() + 1) / 4.0 + 0.25;
-		double x = (m_joystickLeft.getY() + 1) / 2.0;
-		cameraMount.setTilt(-y);
+		double y = (m_joystickRight.getRawAxis(2) + 1) / 4.0 + 0.25;
+		double x = (m_joystickLeft.getRawAxis(1) + 1) / 2.0;
+		y -= 0.5;
+		y *= -1; // invert controls
+		cameraMount.setTilt(y);
 		cameraMount.setPan(x);
 	}
 
@@ -84,7 +85,7 @@ public class DriveWithGameController extends CommandBase {
 			shooterSpeed = 0.7;
 		else if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = 1;
 
-		shooter.set(shooterSpeed);
+		shooter.set(-shooterSpeed);
 
 		double voltage = shooter.getVoltage();
 		System.out.println("Shooter Speed: " + voltage);
