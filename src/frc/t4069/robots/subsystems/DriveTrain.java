@@ -1,7 +1,6 @@
 package frc.t4069.robots.subsystems;
 
 import edu.wpi.first.wpilibj.Jaguar;
-import edu.wpi.first.wpilibj.Victor;
 import frc.t4069.robots.RobotMap;
 import frc.t4069.utils.math.LowPassFilter;
 
@@ -12,7 +11,7 @@ public class DriveTrain {
 	// Put methods for controlling this subsystem
 	// here. Call these from Commands.
 
-	private Victor m_leftJaguar;
+	private Jaguar m_leftJaguar;
 	private Jaguar m_rightJaguar;
 	private LowPassFilter m_leftLP = new LowPassFilter(RC);
 	private LowPassFilter m_rightLP = new LowPassFilter(RC);
@@ -22,10 +21,10 @@ public class DriveTrain {
 	private double m_limit = 1.0;
 
 	public DriveTrain() {
-		this(new Victor(RobotMap.LEFT_MOTOR), new Jaguar(RobotMap.RIGHT_MOTOR));
+		this(new Jaguar(RobotMap.LEFT_MOTOR), new Jaguar(RobotMap.RIGHT_MOTOR));
 	}
 
-	public DriveTrain(Victor leftJaguar, Jaguar rightJaguar) {
+	public DriveTrain(Jaguar leftJaguar, Jaguar rightJaguar) {
 		m_leftJaguar = leftJaguar;
 		m_rightJaguar = rightJaguar;
 	}
