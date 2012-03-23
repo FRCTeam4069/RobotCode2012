@@ -5,11 +5,13 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Victor;
 import frc.t4069.robots.RobotMap;
+import frc.t4069.utils.math.LowPassFilter;
 
 public class Shooter {
 	private DigitalInput m_sensor;
 	private Victor m_shooterMotor;
 	private AnalogChannel m_voltagesensor;
+	private LowPassFilter m_lpf;
 
 	private boolean m_shootingInProgress = false;
 
@@ -17,6 +19,7 @@ public class Shooter {
 		m_shooterMotor = new Victor(RobotMap.SHOOTER_MOTOR);
 		m_voltagesensor = new AnalogChannel(RobotMap.SHOOTER_VOLTAGE_DETECTOR);
 		m_sensor = new DigitalInput(RobotMap.PHOTOELECTRIC_SENSOR);
+		m_lpf = new LowPassFilter(50);
 	}
 
 	public double getVoltage() {
@@ -32,6 +35,7 @@ public class Shooter {
 	}
 
 	public void set(double speed) {
+		speed = m_lpf.calculate(speed);
 		m_shooterMotor.set(speed);
 	}
 

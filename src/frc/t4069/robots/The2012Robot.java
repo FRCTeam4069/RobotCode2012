@@ -1,5 +1,7 @@
 package frc.t4069.robots;
 
+import java.util.Date;
+
 import com.sun.squawk.util.MathUtils;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -21,7 +23,7 @@ public class The2012Robot extends IterativeRobot {
 
 	DriveWithGameController driveWithController;
 	Command doDebugInfo;
-	Command driveWithKinect;
+	Command autoShooter;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -43,12 +45,42 @@ public class The2012Robot extends IterativeRobot {
 
 	}
 
+	int ballsShot = 0;
+	int lastStatusSustained = 0;
+	boolean lastStatus = false;
+	long lastRecognized;
+
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
+		if (ballsShot == 2) {
+			if (new Date().getTime() - lastRecognized < 2000) {
+				CommandBase.shooter.set(-0.55);
+				CommandBase.conveyor.reverse();
+				SmartDashboard
+						.putString("Autonomous", "Spin down in 2 seconds");
+			} else {
+				SmartDashboard.putString("Autonomous", "Ended");
+				CommandBase.shooter.set(0);
+			}
+		} else if (ballsShot < 2) {
+			SmartDashboard.putString("Autonomous", "In progress");
+			CommandBase.shooter.set(-0.55);
+			CommandBase.conveyor.reverse();
+			boolean thisStatus = CommandBase.shooter.isBallThere();
+			if (thisStatus) lastStatusSustained++;
+			if (lastStatus && !thisStatus) {
+				if (lastStatusSustained > 4) ballsShot++;
+				lastStatusSustained = 0;
+				if (ballsShot == 2) lastRecognized = new Date().getTime();
+			}
+			lastStatus = thisStatus;
+		}
+
 	}
 
 	public void disabledInit() {
 		Logger.i("Disabled!");
+		SmartDashboard.putString("Autonomous", "Ended");
 	}
 
 	public void disabledPeriodic() {
@@ -60,7 +92,7 @@ public class The2012Robot extends IterativeRobot {
 	}
 
 	public void teleopInit() {
-
+		SmartDashboard.putString("Autonomous", "Ended");
 		driveWithController.start();
 	}
 

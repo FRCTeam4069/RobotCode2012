@@ -11,7 +11,6 @@ public class BallPickupArm {
 	private Victor m_armMotor;
 	private Victor m_roller;
 	private LowPassFilter m_rollerLPF = new LowPassFilter(RC);
-	private LowPassFilter m_armLPF = new LowPassFilter(RC);
 	private DigitalInput m_limitswitch1;
 	public static final double SPEED = 0.6;
 
@@ -33,7 +32,6 @@ public class BallPickupArm {
 			speed = m_limitswitch1.get() ? 0 : speed;
 			if (speed == 0) Logger.i("Limit switched!");
 		}
-		speed = m_armLPF.calculate(speed);
 		m_armMotor.set(speed);
 	}
 

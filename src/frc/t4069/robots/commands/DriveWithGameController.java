@@ -48,14 +48,15 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processRoller() {
 		if (m_joystickLeft.getRawButton(1))
-			pickupArm.runRoller(m_ds.getAnalogIn(3) / 5.0);
+			pickupArm.runRoller(0.6);
 		else
 			pickupArm.runRoller(0);
 	}
 
 	protected void processArm(GameController gc) {
 		double speed = m_joystickLeft.getRawAxis(2);
-		pickupArm.setArm(-speed / 2.0);
+		speed = Math.abs(speed) < 0 ? m_gc.getRightStick().y : speed;
+		pickupArm.setArm(speed / (1.666666666));
 	}
 
 	protected void processDriveTrain(GameController gc, double turnSensitivity) {
@@ -69,10 +70,8 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processCamera(GameController gc) {
 		// TODO: Sensititivty..g
-		double y = (m_joystickRight.getRawAxis(2) + 1) / 4.0 + 0.25;
-		double x = (m_joystickLeft.getRawAxis(1) + 1) / 2.0;
-		y -= 0.5;
-		y *= -1; // invert controls
+		double y = (m_joystickRight.getRawAxis(2) + 1) / 4.0; // 0 - 0.5
+		double x = (m_joystickRight.getRawAxis(1) + 1) / 2.88; // 0 - 0.7
 		cameraMount.setTilt(y);
 		cameraMount.setPan(x);
 	}
@@ -82,8 +81,11 @@ public class DriveWithGameController extends CommandBase {
 		if (m_gc.getButton(GameController.BTN_X))
 			shooterSpeed = 0.4;
 		else if (m_gc.getButton(GameController.BTN_A))
-			shooterSpeed = 0.7;
-		else if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = 1;
+			shooterSpeed = 0.55;
+		else if (m_gc.getButton(GameController.BTN_B))
+			shooterSpeed = 0.75;
+		else if (m_gc.getButton(GameController.BTN_Y))
+			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
 
 		shooter.set(-shooterSpeed);
 
