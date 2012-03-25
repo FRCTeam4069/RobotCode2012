@@ -1,27 +1,25 @@
 package frc.t4069.robots.subsystems;
 
-import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Victor;
 import frc.t4069.robots.RobotMap;
+import frc.t4069.utils.Logger;
 import frc.t4069.utils.math.LowPassFilter;
 
 public class BallPickupArm {
 
-	private Relay m_motor1;
-	private Relay m_motor2;
+	private Victor m_armMotor;
 	private Victor m_roller;
 	private LowPassFilter m_rollerLPF = new LowPassFilter(RC);
+	private DigitalInput m_limitswitch1;
+	public static final double SPEED = 0.6;
 
 	private static final int RC = 250;
 
 	public BallPickupArm() {
-		this(RobotMap.PICKUP_ARM_MOTOR_1, RobotMap.PICKUP_ARM_MOTOR_2);
-	}
-
-	public BallPickupArm(int motor1channel, int motor2channel) {
-		m_motor1 = new Relay(motor1channel);
-		m_motor2 = new Relay(motor2channel);
-		m_roller = new Victor(5);
+		m_armMotor = new Victor(RobotMap.PICKUP_ARM_MOTOR);
+		m_roller = new Victor(RobotMap.PICKUP_ARM_ROLLER);
+		m_limitswitch1 = new DigitalInput(RobotMap.ARM_LIMITSWITCH);
 	}
 
 	public void runRoller(double speed) {
@@ -29,19 +27,12 @@ public class BallPickupArm {
 		m_roller.set(speed);
 	}
 
-	public void forward() {
-		m_motor1.set(Relay.Value.kForward);
-		m_motor2.set(Relay.Value.kForward);
-	}
-
-	public void reverse() {
-		m_motor1.set(Relay.Value.kReverse);
-		m_motor2.set(Relay.Value.kReverse);
-	}
-
-	public void stop() {
-		m_motor1.set(Relay.Value.kOff);
-		m_motor2.set(Relay.Value.kOff);
+	public void setArm(double speed) {
+		if (speed < 0) {
+			speed = m_limitswitch1.get() ? 0 : speed;
+			if (speed == 0) Logger.i("Limit switched!");
+		}
+		m_armMotor.set(speed);
 	}
 
 }

@@ -1,16 +1,19 @@
 package frc.t4069.utils.networking;
 
+import frc.t4069.utils.Queue;
+
 public class NewCommLink {
 	public static final String DEFAULT_URL = "http://10.40.69.6:4069/";
-	public static final String USER_AGENT = "Team4069Robot/1.1";
+	public static final String USER_AGENT = "Team4069Robot/2.0";
 
-	private String m_url;
+	private static class CommThread {
+		public Queue messageQueue;
 
-	public NewCommLink() {
-		this(DEFAULT_URL);
+		public CommThread() {
+			messageQueue = new Queue();
+		}
 	}
 
-	public NewCommLink(String url) {
-		m_url = url;
-	}
+	private static CommThread m_ct;
+
 }
