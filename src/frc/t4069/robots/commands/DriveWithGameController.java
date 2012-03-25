@@ -1,11 +1,25 @@
 package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.utils.GameController;
-import frc.t4069.utils.math.Point;
+import frc.t4069.utils.GameController.EventHandler;
 
-public class DriveWithGameController extends Command {
+public class DriveWithGameController extends CommandBase {
+
+	private GameController m_gc;
+
+	private Joystick m_joystickRight;
+	private Joystick m_joystickLeft;
+	private DriverStation m_ds;
+	private double m_speedlimit = 1;
+
+	private final static double LOW = 0.36;
+	private final static double MEDIUM = 0.55;
+	private final static double HIGH = 0.75;
+
+	public static String log = "";
 
 	public DriveWithGameController() {
 
@@ -13,53 +27,106 @@ public class DriveWithGameController extends Command {
 
 	protected void initialize() {
 		// TODO Auto-generated method stub
-
+		m_gc = oi.getController();
+		m_joystickLeft = oi.getLeftJoystick();
+		m_joystickRight = oi.getRightJoystick();
+		m_ds = DriverStation.getInstance();
 	}
 
 	protected void execute() {
-		GameController gc = CommandBase.oi.getController();
-		DriverStation ds = DriverStation.getInstance();
-		double sensitivity = ds.getAnalogIn(2) / 5.0;
+		double sensitivity = m_ds.getAnalogIn(2) / 5.0;
+		m_gc.tick();
 
-		processCamera(gc);
-		processDriveTrain(gc, sensitivity);
-		processArm(gc);
+		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
+			public void buttonUp() {
+				if (m_speedlimit == 1)
+					m_speedlimit = 0.65;
+				else
+					m_speedlimit = 1;
+			}
+		});
 
-		if (gc.getButton(GameController.BTN_X))
-			CommandBase.pickupArm.runRoller(ds.getAnalogIn(1) / 5.0);
+		m_gc.addButtonHandler(GameController.BTN_X, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += LOW + ",";
+			}
+		});
+
+		m_gc.addButtonHandler(GameController.BTN_A, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += MEDIUM + ",";
+			}
+		});
+
+		m_gc.addButtonHandler(GameController.BTN_B, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += HIGH + ",";
+			}
+		});
+
+		SmartDashboard.putBoolean("RightButton3",
+				m_joystickRight.getRawButton(3));
+
+		processCamera(m_gc);
+		processRoller();
+		processDriveTrain(m_gc, sensitivity);
+		processArm(m_gc);
+		processConveyorShooter();
+	}
+
+	protected void processRoller() {
+		if (m_joystickLeft.getRawButton(1))
+			pickupArm.runRoller(0.6);
 		else
-			CommandBase.pickupArm.runRoller(0);
-
+			pickupArm.runRoller(0);
 	}
 
 	protected void processArm(GameController gc) {
-		if (gc.getButton(GameController.BTN_Y))
-			CommandBase.pickupArm.forward();
-		else if (gc.getButton(GameController.BTN_A))
-			CommandBase.pickupArm.reverse();
-		else
-			CommandBase.pickupArm.stop();
+		double speed = m_joystickLeft.getRawAxis(2);
+		pickupArm.setArm(speed / (1.666666666));
 	}
 
 	protected void processDriveTrain(GameController gc, double turnSensitivity) {
 		if (gc.getButton(GameController.BTN_RB)
 				|| gc.getButton(GameController.BTN_LB))
-			CommandBase.drivetrain.hardBreak();
+			drivetrain.hardBreak();
 		else
-			CommandBase.drivetrain.arcadeDrive(gc.getTrigger(),
-					gc.getLeftStick().x * turnSensitivity);
+			drivetrain.arcadeDrive(m_speedlimit * gc.getTrigger(), m_speedlimit
+					* gc.getLeftStick().x * turnSensitivity);
 	}
 
 	protected void processCamera(GameController gc) {
-		Point rightStick = gc.getRightStick();
-		double y = (rightStick.y + 1) / 4.0 + 0.25;
-		double x = (rightStick.x + 1) / 2.0;
-		CommandBase.cameraMount.setTilt(y);
-		CommandBase.cameraMount.setPan(x);
+		// TODO: Sensititivty..g
+		double y = (m_joystickRight.getRawAxis(2) + 1) / 4.0; // 0 - 0.5
+		double x = (m_joystickRight.getRawAxis(1) + 1) / 2.88; // 0 - 0.7
+		cameraMount.setTilt(y);
+		cameraMount.setPan(x);
+	}
+
+	protected void processConveyorShooter() {
+		double shooterSpeed = 0;
+		if (m_gc.getButton(GameController.BTN_X))
+			shooterSpeed = LOW;
+		else if (m_gc.getButton(GameController.BTN_A))
+			shooterSpeed = MEDIUM;
+		else if (m_gc.getButton(GameController.BTN_B))
+			shooterSpeed = HIGH;
+		else if (m_gc.getButton(GameController.BTN_Y))
+			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
+
+		shooter.set(-shooterSpeed);
+
+		double voltage = shooter.getVoltage();
+		if (shooterSpeed > 0.1 && shooter.isShooterReady())
+			conveyor.reverse();
+		else if (!shooter.isBallThere())
+			conveyor.reverse();
+		else
+			conveyor.stop();
+
 	}
 
 	protected void interrupted() {
-		// TODO Auto-generated method stub
 
 	}
 

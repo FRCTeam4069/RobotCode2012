@@ -1,12 +1,14 @@
 package frc.t4069.robots;
 
-import edu.wpi.first.wpilibj.DriverStation;
+import java.util.Date;
+
+import com.sun.squawk.util.MathUtils;
+
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.robots.commands.CommandBase;
-import frc.t4069.robots.commands.DoDebug;
 import frc.t4069.robots.commands.DriveWithGameController;
 import frc.t4069.utils.Logger;
 
@@ -19,10 +21,9 @@ import frc.t4069.utils.Logger;
  */
 public class The2012Robot extends IterativeRobot {
 
-	Command driveWithController;
+	DriveWithGameController driveWithController;
 	Command doDebugInfo;
-
-	private DriverStation m_ds;
+	Command autoShooter;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -30,51 +31,97 @@ public class The2012Robot extends IterativeRobot {
 	 */
 
 	public void robotInit() {
-		m_ds = DriverStation.getInstance();
-
 		// instantiate the command used for the autonomous period
-		driveWithController = new DriveWithGameController();
-		doDebugInfo = new DoDebug();
 		// Initialize all subsystems
 
 		CommandBase.init();
-		doDebugInfo.start();
-
+		driveWithController = new DriveWithGameController();
 		// For knowing whose code is on the robot.
 		SmartDashboard.putString("Author", Version.author);
 		Logger.i("Robot initialized.");
 	}
 
 	public void autonomousInit() {
-		// schedule the autonomous command (example)
-		// autonomousCommand.start();
+
 	}
+
+	int ballsShot = 0;
+	int lastStatusSustained = 0;
+	boolean lastStatus = false;
+	long lastRecognized;
+	private static double AUTOSPEED = 0.30;
 
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
+		if (ballsShot == 2) {
+			if (new Date().getTime() - lastRecognized < 2000) {
+				CommandBase.shooter.set(-AUTOSPEED);
+				CommandBase.conveyor.reverse();
+				SmartDashboard
+						.putString("Autonomous", "Spin down in 2 seconds");
+			} else {
+				SmartDashboard.putString("Autonomous", "Ended");
+				CommandBase.shooter.set(0);
+			}
+		} else if (ballsShot < 2) {
+			SmartDashboard.putString("Autonomous", "In progress");
+			boolean thisStatus = CommandBase.shooter.isBallThere();
+			if (thisStatus) {
+				lastStatusSustained++;
+				double percent = CommandBase.shooter.getVoltage() / 12.0;
+				if (percent > AUTOSPEED - (AUTOSPEED * 0.1))
+					CommandBase.conveyor.reverse();
+
+			} else
+				CommandBase.conveyor.reverse();
+			CommandBase.shooter.set(-AUTOSPEED);
+
+			if (lastStatus && !thisStatus) {
+				if (lastStatusSustained > 4) ballsShot++;
+				lastStatusSustained = 0;
+				if (ballsShot == 2) lastRecognized = new Date().getTime();
+			}
+			lastStatus = thisStatus;
+		}
+
 	}
 
 	public void disabledInit() {
-
+		Logger.i("Disabled!");
+		SmartDashboard.putString("Autonomous", "Ended");
 	}
 
 	public void disabledPeriodic() {
 
 	}
 
-	public void disabledContinous() {
+	public void disabledContinuous() {
 
 	}
 
 	public void teleopInit() {
+		SmartDashboard.putString("Autonomous", "Ended");
 		driveWithController.start();
 	}
 
 	/**
 	 * This function is called periodically during operator control.
 	 */
+
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
 
+		SmartDashboard.putBoolean("Ball Ready To Shoot",
+				CommandBase.shooter.isBallThere());
+		SmartDashboard.putBoolean("Shooting In Progress",
+				CommandBase.shooter.shootingInProgress());
+
+		if (CommandBase.shooter.isShooterReady())
+			SmartDashboard.putString("Shooter Status", "Ready");
+		else
+			SmartDashboard.putString("Shooter Status", "Not Ready");
+		double shooterVoltage = MathUtils.round(CommandBase.shooter
+				.getVoltage() * 100) / 12;
+		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
 	}
 }
