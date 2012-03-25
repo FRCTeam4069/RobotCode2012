@@ -49,12 +49,13 @@ public class The2012Robot extends IterativeRobot {
 	int lastStatusSustained = 0;
 	boolean lastStatus = false;
 	long lastRecognized;
+	private static double AUTOSPEED = 0.30;
 
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		if (ballsShot == 2) {
 			if (new Date().getTime() - lastRecognized < 2000) {
-				CommandBase.shooter.set(-0.55);
+				CommandBase.shooter.set(-AUTOSPEED);
 				CommandBase.conveyor.reverse();
 				SmartDashboard
 						.putString("Autonomous", "Spin down in 2 seconds");
@@ -64,10 +65,17 @@ public class The2012Robot extends IterativeRobot {
 			}
 		} else if (ballsShot < 2) {
 			SmartDashboard.putString("Autonomous", "In progress");
-			CommandBase.shooter.set(-0.55);
-			CommandBase.conveyor.reverse();
 			boolean thisStatus = CommandBase.shooter.isBallThere();
-			if (thisStatus) lastStatusSustained++;
+			if (thisStatus) {
+				lastStatusSustained++;
+				double percent = CommandBase.shooter.getVoltage() / 12.0;
+				if (percent > AUTOSPEED - (AUTOSPEED * 0.1))
+					CommandBase.conveyor.reverse();
+
+			} else
+				CommandBase.conveyor.reverse();
+			CommandBase.shooter.set(-AUTOSPEED);
+
 			if (lastStatus && !thisStatus) {
 				if (lastStatusSustained > 4) ballsShot++;
 				lastStatusSustained = 0;
@@ -113,7 +121,7 @@ public class The2012Robot extends IterativeRobot {
 		else
 			SmartDashboard.putString("Shooter Status", "Not Ready");
 		double shooterVoltage = MathUtils.round(CommandBase.shooter
-				.getVoltage() * 100) / 100.0;
+				.getVoltage() * 100) / 12;
 		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
 	}
 }

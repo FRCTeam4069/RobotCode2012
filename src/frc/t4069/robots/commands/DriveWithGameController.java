@@ -2,6 +2,7 @@ package frc.t4069.robots.commands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.utils.GameController;
 import frc.t4069.utils.GameController.EventHandler;
 
@@ -13,6 +14,12 @@ public class DriveWithGameController extends CommandBase {
 	private Joystick m_joystickLeft;
 	private DriverStation m_ds;
 	private double m_speedlimit = 1;
+
+	private final static double LOW = 0.36;
+	private final static double MEDIUM = 0.55;
+	private final static double HIGH = 0.75;
+
+	public static String log = "";
 
 	public DriveWithGameController() {
 
@@ -33,11 +40,32 @@ public class DriveWithGameController extends CommandBase {
 		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
 			public void buttonUp() {
 				if (m_speedlimit == 1)
-					m_speedlimit = 0.5;
+					m_speedlimit = 0.65;
 				else
 					m_speedlimit = 1;
 			}
 		});
+
+		m_gc.addButtonHandler(GameController.BTN_X, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += LOW + ",";
+			}
+		});
+
+		m_gc.addButtonHandler(GameController.BTN_A, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += MEDIUM + ",";
+			}
+		});
+
+		m_gc.addButtonHandler(GameController.BTN_B, new EventHandler() {
+			public void buttonUp() {
+				DriveWithGameController.log += HIGH + ",";
+			}
+		});
+
+		SmartDashboard.putBoolean("RightButton3",
+				m_joystickRight.getRawButton(3));
 
 		processCamera(m_gc);
 		processRoller();
@@ -55,7 +83,6 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processArm(GameController gc) {
 		double speed = m_joystickLeft.getRawAxis(2);
-		speed = Math.abs(speed) < 0 ? m_gc.getRightStick().y : speed;
 		pickupArm.setArm(speed / (1.666666666));
 	}
 
@@ -79,18 +106,17 @@ public class DriveWithGameController extends CommandBase {
 	protected void processConveyorShooter() {
 		double shooterSpeed = 0;
 		if (m_gc.getButton(GameController.BTN_X))
-			shooterSpeed = 0.4;
+			shooterSpeed = LOW;
 		else if (m_gc.getButton(GameController.BTN_A))
-			shooterSpeed = 0.55;
+			shooterSpeed = MEDIUM;
 		else if (m_gc.getButton(GameController.BTN_B))
-			shooterSpeed = 0.75;
+			shooterSpeed = HIGH;
 		else if (m_gc.getButton(GameController.BTN_Y))
 			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
 
 		shooter.set(-shooterSpeed);
 
 		double voltage = shooter.getVoltage();
-		System.out.println("Shooter Speed: " + voltage);
 		if (shooterSpeed > 0.1 && shooter.isShooterReady())
 			conveyor.reverse();
 		else if (!shooter.isBallThere())

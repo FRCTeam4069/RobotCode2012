@@ -12,6 +12,7 @@ public class Shooter {
 	private Victor m_shooterMotor;
 	private AnalogChannel m_voltagesensor;
 	private LowPassFilter m_lpf;
+	private String log = "";
 
 	private boolean m_shootingInProgress = false;
 
