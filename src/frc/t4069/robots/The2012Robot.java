@@ -42,7 +42,7 @@ public class The2012Robot extends IterativeRobot {
 	}
 
 	public void autonomousInit() {
-
+		m_autostarttime = new Date().getTime();
 	}
 
 	int ballsShot = 0;
@@ -50,38 +50,70 @@ public class The2012Robot extends IterativeRobot {
 	boolean lastStatus = false;
 	long lastRecognized;
 	private static double AUTOSPEED = 0.30;
+	private static double CLOSEAUTOSPEED = 0.1;
+
+	private static double KEY_RPM = 2000;
+	private static double FENDER_RPM = 1000;
+
+	private long m_autostarttime;
+
+	private final static int MODE_SHOOT = 0;
+	private final static int MODE_FEED = 1;
+	private final static int MODE_CLOSESHOOT = 2;
+	private int MODE = MODE_SHOOT;
 
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
-		if (ballsShot == 2) {
-			if (new Date().getTime() - lastRecognized < 2000) {
-				CommandBase.shooter.set(-AUTOSPEED);
-				CommandBase.conveyor.reverse();
-				SmartDashboard
-						.putString("Autonomous", "Spin down in 2 seconds");
-			} else {
-				SmartDashboard.putString("Autonomous", "Ended");
-				CommandBase.shooter.set(0);
-			}
-		} else if (ballsShot < 2) {
-			SmartDashboard.putString("Autonomous", "In progress");
-			boolean thisStatus = CommandBase.shooter.isBallThere();
-			if (thisStatus) {
-				lastStatusSustained++;
-				double percent = CommandBase.shooter.getVoltage() / 12.0;
-				if (percent > AUTOSPEED - (AUTOSPEED * 0.1))
-					CommandBase.conveyor.reverse();
+		switch (MODE) {
+			case MODE_SHOOT:
+				if (ballsShot == 2) {
+					if (new Date().getTime() - lastRecognized < 2000) {
 
-			} else
-				CommandBase.conveyor.reverse();
-			CommandBase.shooter.set(-AUTOSPEED);
+						CommandBase.shooter.set(-AUTOSPEED);
+						CommandBase.conveyor.reverse();
+						SmartDashboard.putString("Autonomous",
+								"Spin down in 2 seconds");
+					} else {
+						SmartDashboard.putString("Autonomous", "Ended");
+						CommandBase.shooter.set(0);
+					}
+				} else if (ballsShot < 2) {
+					SmartDashboard.putString("Autonomous", "In progress");
+					boolean thisStatus = CommandBase.shooter.isBallThere();
+					if (thisStatus) {
+						lastStatusSustained++;
+						double percent = CommandBase.shooter.getVoltage() / 12.0;
+						if (percent > AUTOSPEED - (AUTOSPEED * 0.1))
+							CommandBase.conveyor.reverse();
 
-			if (lastStatus && !thisStatus) {
-				if (lastStatusSustained > 4) ballsShot++;
-				lastStatusSustained = 0;
-				if (ballsShot == 2) lastRecognized = new Date().getTime();
-			}
-			lastStatus = thisStatus;
+					} else
+						CommandBase.conveyor.reverse();
+					CommandBase.shooter.set(-AUTOSPEED);
+
+					if (lastStatus && !thisStatus) {
+						if (lastStatusSustained > 4) ballsShot++;
+						lastStatusSustained = 0;
+						if (ballsShot == 2)
+							lastRecognized = new Date().getTime();
+					}
+					lastStatus = thisStatus;
+				}
+			break;
+			case MODE_FEED:
+				if (new Date().getTime() - m_autostarttime < 2000)
+					CommandBase.pickupArm.setArm(0.5);
+			break;
+			case MODE_CLOSESHOOT:
+				long time = new Date().getTime();
+				CommandBase.shooter.set(-CLOSEAUTOSPEED);
+				if (time - m_autostarttime < 3500)
+					CommandBase.drivetrain.arcadeDrive(1.0, 0);
+				if (time - m_autostarttime > 5000) {
+					MODE = MODE_SHOOT;
+					AUTOSPEED = CLOSEAUTOSPEED;
+				}
+
+			break;
 		}
 
 	}
@@ -113,8 +145,6 @@ public class The2012Robot extends IterativeRobot {
 
 		SmartDashboard.putBoolean("Ball Ready To Shoot",
 				CommandBase.shooter.isBallThere());
-		SmartDashboard.putBoolean("Shooting In Progress",
-				CommandBase.shooter.shootingInProgress());
 
 		if (CommandBase.shooter.isShooterReady())
 			SmartDashboard.putString("Shooter Status", "Ready");
@@ -123,5 +153,6 @@ public class The2012Robot extends IterativeRobot {
 		double shooterVoltage = MathUtils.round(CommandBase.shooter
 				.getVoltage() * 100) / 12;
 		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
+		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRate());
 	}
 }

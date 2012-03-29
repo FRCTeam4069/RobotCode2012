@@ -105,19 +105,22 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processConveyorShooter() {
 		double shooterSpeed = 0;
-		if (m_gc.getButton(GameController.BTN_X))
-			shooterSpeed = LOW;
-		else if (m_gc.getButton(GameController.BTN_A))
-			shooterSpeed = MEDIUM;
-		else if (m_gc.getButton(GameController.BTN_B))
-			shooterSpeed = HIGH;
-		else if (m_gc.getButton(GameController.BTN_Y))
-			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
-
-		shooter.set(-shooterSpeed);
-
+		double shooterRPM = 0;
+		if (m_gc.getButton(GameController.BTN_X)) {
+			shooterRPM = 100;
+			shooter.setTargetSpeed(shooterRPM);
+		}
+		/*
+		 * if (m_gc.getButton(GameController.BTN_A)) shooterSpeed = MEDIUM; else
+		 * if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = HIGH; else
+		 * if (m_gc.getButton(GameController.BTN_Y)) shooterSpeed =
+		 * m_ds.getAnalogIn(3) / 5.0;
+		 * 
+		 * 
+		 * shooter.set(-shooterSpeed);
+		 */
 		double voltage = shooter.getVoltage();
-		if (shooterSpeed > 0.1 && shooter.isShooterReady())
+		if (shooterRPM > 0 && shooter.isShooterReady())
 			conveyor.reverse();
 		else if (!shooter.isBallThere())
 			conveyor.reverse();
