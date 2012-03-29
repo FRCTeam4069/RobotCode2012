@@ -1,25 +1,25 @@
 package frc.t4069.robots.subsystems;
 
-import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Victor;
 import frc.t4069.robots.RobotMap;
 
 public class Conveyor {
-	private Relay m_relay;
+	private Victor m_victor;
 
 	public Conveyor() {
-		m_relay = new Relay(RobotMap.CONVEYER);
+		m_victor = new Victor(RobotMap.CONVEYER);
 	}
 
 	public void forward() { // It's flipped
-		m_relay.set(Relay.Value.kForward);
+		m_victor.set(0.5);
 	}
 
 	public void reverse() {
-		m_relay.set(Relay.Value.kReverse);
+		m_victor.set(-0.5);
 	}
 
 	public void stop() {
-		m_relay.set(Relay.Value.kOff);
+		m_victor.set(0);
 	}
 
 }

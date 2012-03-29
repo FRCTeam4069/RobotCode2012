@@ -1,5 +1,7 @@
 package frc.t4069.robots.commands;
 
+import java.util.Date;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,9 +35,22 @@ public class DriveWithGameController extends CommandBase {
 		m_ds = DriverStation.getInstance();
 	}
 
+	private long m_shooterStart;
+
 	protected void execute() {
 		double sensitivity = m_ds.getAnalogIn(2) / 5.0;
 		m_gc.tick();
+
+		EventHandler delayHandler = new EventHandler() {
+			public void buttonDown() {
+				m_shooterStart = new Date().getTime();
+			}
+		};
+
+		m_gc.addButtonHandler(GameController.BTN_X, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_Y, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_A, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_B, delayHandler);
 
 		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
 			public void buttonUp() {
@@ -43,24 +58,6 @@ public class DriveWithGameController extends CommandBase {
 					m_speedlimit = 0.65;
 				else
 					m_speedlimit = 1;
-			}
-		});
-
-		m_gc.addButtonHandler(GameController.BTN_X, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += LOW + ",";
-			}
-		});
-
-		m_gc.addButtonHandler(GameController.BTN_A, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += MEDIUM + ",";
-			}
-		});
-
-		m_gc.addButtonHandler(GameController.BTN_B, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += HIGH + ",";
 			}
 		});
 
@@ -116,8 +113,8 @@ public class DriveWithGameController extends CommandBase {
 
 		shooter.set(-shooterSpeed);
 
-		double voltage = shooter.getVoltage();
-		if (shooterSpeed > 0.1 && shooter.isShooterReady())
+		if (shooterSpeed > 0.1 && shooter.isShooterReady()
+				&& new Date().getTime() - m_shooterStart > 3000)
 			conveyor.reverse();
 		else if (!shooter.isBallThere())
 			conveyor.reverse();
