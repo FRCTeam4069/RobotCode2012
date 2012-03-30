@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.sun.squawk.util.MathUtils;
 
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -121,6 +122,8 @@ public class The2012Robot extends IterativeRobot {
 	public void disabledInit() {
 		Logger.i("Disabled!");
 		SmartDashboard.putString("Autonomous", "Ended");
+		CommandBase.shooter.disablePID();
+		CommandBase.shooter.problemflag = false;
 	}
 
 	public void disabledPeriodic() {
@@ -134,6 +137,7 @@ public class The2012Robot extends IterativeRobot {
 	public void teleopInit() {
 		SmartDashboard.putString("Autonomous", "Ended");
 		driveWithController.start();
+		CommandBase.shooter.enablePID();
 	}
 
 	/**
@@ -153,6 +157,7 @@ public class The2012Robot extends IterativeRobot {
 		double shooterVoltage = MathUtils.round(CommandBase.shooter
 				.getVoltage() * 100) / 12;
 		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
-		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRate());
+		Encoder encoder = CommandBase.shooter.getEncoder();
+		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRPM());
 	}
 }

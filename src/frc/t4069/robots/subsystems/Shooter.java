@@ -3,6 +3,7 @@ package frc.t4069.robots.subsystems;
 import java.util.Date;
 
 import edu.wpi.first.wpilibj.AnalogChannel;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
@@ -22,21 +23,24 @@ public class Shooter {
 	private PIDController m_pc;
 	private RPMEncoder m_encoderpidsource;
 	private EncoderOutput m_encoderoutput;
-	private double lastPWMValue = 0.5;
+	private double lastPWMValue = 0;
 
-	private final static int TICK_COUNT = 1440;
-	private long lastTime = -1337;
+	private final static int TICK_COUNT = 250;
 
-	private final static double MAGIC = 1.9231e-04;
-	private static double p = 5 * MAGIC;
-	private static double i = 0.1 * MAGIC;
-	private static double d = 3 * MAGIC;
+	// private final static double MAGIC = 1.9231e-04;
+	private final static int MAX_SPEED = 5000;
+	private final static double MAGIC = 1.0;
+	private static double p = 1 * MAGIC;
+	private static double i = 1 * MAGIC;
+	private static double d = 1 * MAGIC;
 
 	public static double[] ps = { 0, 0, 0 };
 	private static double[] dp = { 1, 1, 1 }; // p, i, d
 
 	class RPMEncoder implements PIDSource {
 		private Encoder m_encoder;
+		private long lastTime = -1337;
+		private int lastValue = 0;
 
 		public RPMEncoder(Encoder encoder) {
 			m_encoder = encoder;
@@ -45,26 +49,39 @@ public class Shooter {
 		public double pidGet() {
 			if (lastTime == -1337) {
 				lastTime = new Date().getTime();
+				lastValue = 0;
 				return 0;
 			}
 			long ct = new Date().getTime();
 			double deltaTime = ct - lastTime;
 			lastTime = ct;
-			return m_encoder.get() / TICK_COUNT * deltaTime;
+			int thisValue = m_encoder.get();
+			int deltaValue = thisValue - lastValue;
+			lastValue = thisValue;
+			if (lastValue > 2000000000) {
+				m_encoder.reset();
+				lastValue = 0;
+			}
+			double rev = deltaValue / 250.0;
+			return rev / (deltaTime / 60000.0) / MAX_SPEED;
 		}
-
 	}
 
 	class EncoderOutput implements PIDOutput {
 		public double value = 0;
 
 		public void pidWrite(double output) {
-			output = value;
+			System.out.println("Writing PID! " + output);
+			value = output;
 		}
 	}
 
 	public double getRPM() {
-		return m_encoderpidsource.pidGet();
+		return m_encoderpidsource.pidGet() * MAX_SPEED;
+	}
+
+	public Encoder getEncoder() {
+		return m_encoder;
 	}
 
 	public Shooter() {
@@ -72,14 +89,15 @@ public class Shooter {
 		m_voltagesensor = new AnalogChannel(RobotMap.SHOOTER_VOLTAGE_DETECTOR);
 		m_sensor = new DigitalInput(RobotMap.PHOTOELECTRIC_SENSOR);
 		m_lpf = new LowPassFilter(50);
-		m_encoder = new Encoder(RobotMap.ENCODER_A, RobotMap.ENCODER_B);
+		m_encoder = new Encoder(RobotMap.ENCODER_A, RobotMap.ENCODER_B, false,
+				CounterBase.EncodingType.k1X);
 
 		m_encoderpidsource = new RPMEncoder(m_encoder);
 		m_encoderoutput = new EncoderOutput();
 
 		m_encoder.start();
 		m_encoder.reset();
-		m_pc = new PIDController(0, 0, 0, m_encoderpidsource, m_encoderoutput);
+		m_pc = new PIDController(p, i, d, m_encoderpidsource, m_encoderoutput);
 		m_pc.setOutputRange(-1, 1);
 		m_pc.setTolerance(1.5);
 
@@ -102,7 +120,7 @@ public class Shooter {
 	}
 
 	public void setTargetSpeed(double rpm) {
-		m_pc.setSetpoint(rpm);
+		m_pc.setSetpoint(rpm / MAX_SPEED);
 		setrpm = rpm;
 	}
 
@@ -193,21 +211,21 @@ public class Shooter {
 		return !m_sensor.get();
 	}
 
-	private boolean problemflag = true;
+	public boolean problemflag = false;
 
 	public void shoot() {
+		SmartDashboard.putBoolean("Problem Flag", problemflag);
+		SmartDashboard.putDouble("Target RPM", m_pc.getSetpoint());
 		if (!problemflag) {
 			double speed = -(lastPWMValue + getPIDOutput());
-			if (Math.abs(lastPWMValue - speed) > 0.4 || speed >= 0) {
-				SmartDashboard.putString("SHOOTERPIDPROBLEM", "PIDout: "
-						+ getPIDOutput() + " | lastPWM: " + lastPWMValue);
-				problemflag = true;
-			}
 			lastPWMValue = -speed;
+			m_shooterMotor.set(speed);
+
 			SmartDashboard.putDouble("Speed Set", speed);
 			SmartDashboard.putDouble("RPM", getRPM());
 			twiddle();
-		}
+		} else
+			m_shooterMotor.set(0);
 	}
 
 	public void set(double speed) {

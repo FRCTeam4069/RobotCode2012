@@ -45,25 +45,6 @@ public class DriveWithGameController extends CommandBase {
 					m_speedlimit = 1;
 			}
 		});
-
-		m_gc.addButtonHandler(GameController.BTN_X, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += LOW + ",";
-			}
-		});
-
-		m_gc.addButtonHandler(GameController.BTN_A, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += MEDIUM + ",";
-			}
-		});
-
-		m_gc.addButtonHandler(GameController.BTN_B, new EventHandler() {
-			public void buttonUp() {
-				DriveWithGameController.log += HIGH + ",";
-			}
-		});
-
 		SmartDashboard.putBoolean("RightButton3",
 				m_joystickRight.getRawButton(3));
 
@@ -106,10 +87,10 @@ public class DriveWithGameController extends CommandBase {
 	protected void processConveyorShooter() {
 		double shooterSpeed = 0;
 		double shooterRPM = 0;
-		if (m_gc.getButton(GameController.BTN_X)) {
-			shooterRPM = 100;
-			shooter.setTargetSpeed(shooterRPM);
-		}
+		if (m_gc.getButton(GameController.BTN_X)) shooterRPM = 100;
+
+		shooter.setTargetSpeed(shooterRPM);
+		shooter.shoot();
 		/*
 		 * if (m_gc.getButton(GameController.BTN_A)) shooterSpeed = MEDIUM; else
 		 * if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = HIGH; else
@@ -119,7 +100,6 @@ public class DriveWithGameController extends CommandBase {
 		 * 
 		 * shooter.set(-shooterSpeed);
 		 */
-		double voltage = shooter.getVoltage();
 		if (shooterRPM > 0 && shooter.isShooterReady())
 			conveyor.reverse();
 		else if (!shooter.isBallThere())
