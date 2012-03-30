@@ -50,7 +50,7 @@ public class The2012Robot extends IterativeRobot {
 	boolean lastStatus = false;
 	long lastRecognized;
 	private static double AUTOSPEED = 0.30;
-	private static double CLOSEAUTOSPEED = 0.10;
+	private static double CLOSEAUTOSPEED = 0.225;
 	private final static int MODE_SHOOT = 0;
 	private final static int MODE_FEED = 1;
 	private final static int MODE_CLOSESHOOT = 2;
@@ -86,12 +86,13 @@ public class The2012Robot extends IterativeRobot {
 					CommandBase.shooter.set(-AUTOSPEED);
 
 					if (lastStatus && !thisStatus) {
-						if (lastStatusSustained > 4) ballsShot++;
-						lastStatusSustained = 0;
-						if (ballsShot == 2) {
-							lastRecognized = new Date().getTime();
+						if (lastStatusSustained > 4) {
+							ballsShot++;
 							m_autostarttime = lastRecognized;
 						}
+						lastStatusSustained = 0;
+						if (ballsShot == 2)
+							lastRecognized = new Date().getTime();
 					}
 					lastStatus = thisStatus;
 				}

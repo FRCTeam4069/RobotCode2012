@@ -80,7 +80,7 @@ public class DriveWithGameController extends CommandBase {
 
 	protected void processArm(GameController gc) {
 		double speed = m_joystickLeft.getRawAxis(2);
-		pickupArm.setArm(speed / (1.666666666));
+		pickupArm.setArm(speed / (1.429));
 	}
 
 	protected void processDriveTrain(GameController gc, double turnSensitivity) {
