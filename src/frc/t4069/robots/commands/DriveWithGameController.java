@@ -55,7 +55,7 @@ public class DriveWithGameController extends CommandBase {
 		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
 			public void buttonUp() {
 				if (m_speedlimit == 1)
-					m_speedlimit = 0.65;
+					m_speedlimit = 0.7;
 				else
 					m_speedlimit = 1;
 			}
@@ -100,6 +100,8 @@ public class DriveWithGameController extends CommandBase {
 		cameraMount.setPan(x);
 	}
 
+	private boolean m_lastBallStatus = false;
+
 	protected void processConveyorShooter() {
 		double shooterSpeed = 0;
 		if (m_gc.getButton(GameController.BTN_X))
@@ -114,10 +116,16 @@ public class DriveWithGameController extends CommandBase {
 		shooter.set(-shooterSpeed);
 
 		if (shooterSpeed > 0.1 && shooter.isShooterReady()
-				&& new Date().getTime() - m_shooterStart > 3000)
+				&& new Date().getTime() - m_shooterStart > 3000) {
+			boolean thisStatus = shooter.isBallThere();
+			if (m_lastBallStatus && !thisStatus)
+				m_shooterStart = new Date().getTime();
+			m_lastBallStatus = thisStatus;
 			conveyor.reverse();
-		else if (!shooter.isBallThere())
+		} else if (!shooter.isBallThere() && m_joystickLeft.getRawButton(3))
 			conveyor.reverse();
+		else if (m_joystickLeft.getRawButton(2))
+			conveyor.forward();
 		else
 			conveyor.stop();
 

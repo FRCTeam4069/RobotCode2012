@@ -1,8 +1,11 @@
 package frc.t4069.robots.subsystems;
 
+import java.util.Date;
+
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.robots.RobotMap;
@@ -13,6 +16,7 @@ public class Shooter {
 	private Victor m_shooterMotor;
 	private AnalogChannel m_voltagesensor;
 	private LowPassFilter m_lpf;
+	private Encoder m_encoder;
 
 	private boolean m_shootingInProgress = false;
 
@@ -21,6 +25,31 @@ public class Shooter {
 		m_voltagesensor = new AnalogChannel(RobotMap.SHOOTER_VOLTAGE_DETECTOR);
 		m_sensor = new DigitalInput(RobotMap.PHOTOELECTRIC_SENSOR);
 		m_lpf = new LowPassFilter(30);
+		m_encoder = new Encoder(RobotMap.ENCODER_A, RobotMap.ENCODER_B);
+		m_encoder.start();
+	}
+
+	long lastTime = -1337;
+	int lastValue = 0;
+
+	public double getRPM() {
+		if (lastTime == -1337) {
+			lastTime = new Date().getTime();
+			lastValue = 0;
+			return 0;
+		}
+		long ct = new Date().getTime();
+		double deltaTime = ct - lastTime;
+		lastTime = ct;
+		int thisValue = m_encoder.get();
+		int deltaValue = thisValue - lastValue;
+		lastValue = thisValue;
+		if (lastValue > 2000000000) {
+			m_encoder.reset();
+			lastValue = 0;
+		}
+		double rev = deltaValue / 250.0;
+		return rev / (deltaTime / 60000.0);
 	}
 
 	public double getVoltage() {
@@ -29,6 +58,12 @@ public class Shooter {
 
 	public boolean isShooterReady() {
 		return (getVoltage() > (DriverStation.getInstance().getBatteryVoltage() * 0.8));
+	}
+
+	private final static double TARGET_TOLERANCE = 0.01;
+
+	public boolean isShooterReady(int targetRPM) {
+		return (targetRPM * (1 - TARGET_TOLERANCE) >= getRPM());
 	}
 
 	public boolean isBallThere() {
@@ -40,11 +75,10 @@ public class Shooter {
 		SmartDashboard.putDouble("Shooter Speed", speed);
 		speed = m_lpf.calculate(speed);
 		m_shooterMotor.set(speed);
-
 	}
 
 	public void shoot() {
-		if (isBallThere()) m_shootingInProgress = true;
+
 	}
 
 	public boolean isShooting() {

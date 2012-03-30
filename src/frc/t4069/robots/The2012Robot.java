@@ -2,8 +2,6 @@ package frc.t4069.robots;
 
 import java.util.Date;
 
-import com.sun.squawk.util.MathUtils;
-
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -51,6 +49,7 @@ public class The2012Robot extends IterativeRobot {
 	long lastRecognized;
 	private static double AUTOSPEED = 0.30;
 	private static double CLOSEAUTOSPEED = 0.225;
+
 	private final static int MODE_SHOOT = 0;
 	private final static int MODE_FEED = 1;
 	private final static int MODE_CLOSESHOOT = 2;
@@ -114,6 +113,7 @@ public class The2012Robot extends IterativeRobot {
 
 			break;
 		}
+		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRPM());
 
 	}
 
@@ -144,15 +144,11 @@ public class The2012Robot extends IterativeRobot {
 
 		SmartDashboard.putBoolean("Ball Ready To Shoot",
 				CommandBase.shooter.isBallThere());
-		SmartDashboard.putBoolean("Shooting In Progress",
-				CommandBase.shooter.shootingInProgress());
+		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRPM());
 
 		if (CommandBase.shooter.isShooterReady())
 			SmartDashboard.putString("Shooter Status", "Ready");
 		else
 			SmartDashboard.putString("Shooter Status", "Not Ready");
-		double shooterVoltage = MathUtils.round(CommandBase.shooter
-				.getVoltage() * 100) / 12;
-		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
 	}
 }
