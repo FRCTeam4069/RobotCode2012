@@ -114,8 +114,11 @@ public class DriveWithGameController extends CommandBase {
 			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
 
 		shooter.set(-shooterSpeed);
-
-		if (shooterSpeed > 0.1 && shooter.isShooterReady()
+		if (m_joystickLeft.getRawButton(6))
+			conveyor.reverse();
+		else if (m_joystickLeft.getRawButton(7))
+			conveyor.forward();
+		else if (shooterSpeed > 0.1 && shooter.isShooterReady()
 				&& new Date().getTime() - m_shooterStart > 3000) {
 			boolean thisStatus = shooter.isBallThere();
 			if (m_lastBallStatus && !thisStatus)
