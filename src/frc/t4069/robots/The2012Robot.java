@@ -2,9 +2,7 @@ package frc.t4069.robots;
 
 import java.util.Date;
 
-import com.sun.squawk.util.MathUtils;
-
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -60,7 +58,6 @@ public class The2012Robot extends IterativeRobot {
 
 	private final static int MODE_SHOOT = 0;
 	private final static int MODE_FEED = 1;
-	private final static int MODE_CLOSESHOOT = 2;
 	private int MODE = MODE_SHOOT;
 
 	public void autonomousPeriodic() {
@@ -104,17 +101,6 @@ public class The2012Robot extends IterativeRobot {
 				if (new Date().getTime() - m_autostarttime < 2000)
 					CommandBase.pickupArm.setArm(0.4);
 			break;
-			case MODE_CLOSESHOOT:
-				long time = new Date().getTime();
-				CommandBase.shooter.set(-CLOSEAUTOSPEED);
-				if (time - m_autostarttime < 3500)
-					CommandBase.drivetrain.arcadeDrive(1.0, 0);
-				if (time - m_autostarttime > 5000) {
-					MODE = MODE_SHOOT;
-					AUTOSPEED = CLOSEAUTOSPEED;
-				}
-
-			break;
 		}
 
 	}
@@ -137,6 +123,9 @@ public class The2012Robot extends IterativeRobot {
 		SmartDashboard.putString("Autonomous", "Ended");
 		driveWithController.start();
 		CommandBase.shooter.enablePID();
+		CommandBase.shooter.setPD(DriverStation.getInstance().getAnalogIn(1),
+				DriverStation.getInstance().getAnalogIn(3),
+				DriverStation.getInstance().getAnalogIn(2));
 	}
 
 	/**
@@ -153,10 +142,7 @@ public class The2012Robot extends IterativeRobot {
 			SmartDashboard.putString("Shooter Status", "Ready");
 		else
 			SmartDashboard.putString("Shooter Status", "Not Ready");
-		double shooterVoltage = MathUtils.round(CommandBase.shooter
-				.getVoltage() * 100) / 12;
-		SmartDashboard.putDouble("Shooter Voltage", shooterVoltage);
-		Encoder encoder = CommandBase.shooter.getEncoder();
+
 		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRPM());
 	}
 }

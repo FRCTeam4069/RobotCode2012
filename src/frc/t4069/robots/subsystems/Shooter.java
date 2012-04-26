@@ -2,8 +2,6 @@ package frc.t4069.robots.subsystems;
 
 import java.util.Date;
 
-import com.sun.squawk.util.Arrays;
-
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -27,11 +25,13 @@ public class Shooter {
 	private EncoderOutput m_encoderoutput;
 	private double lastPWMValue = 0;
 
-	private final static double MAGIC = 1.9231e-04;
+	private final static double MAGIC = 0.001;
+
 	private final static int MAX_SPEED = 5000;
-	private static double p = 1.0 * MAGIC;
+
+	private static double p = 40.0 * MAGIC;
 	private static double i = 0.0 * MAGIC;
-	private static double d = 0.0 * MAGIC;
+	private static double d = 0.2 * MAGIC;
 
 	public static double[] ps = { 0, 0, 0 }; // p, i, d
 
@@ -41,6 +41,8 @@ public class Shooter {
 		private int lastValue = 0;
 		private double[] filter = new double[15];
 		private int i = 0;
+
+		private LowPassFilter m_lpf = new LowPassFilter(25);
 
 		public RPMEncoder(Encoder encoder) {
 			m_encoder = encoder;
@@ -64,20 +66,14 @@ public class Shooter {
 			}
 			double rev = deltaValue / 250.0;
 			rev = rev / (deltaTime / 60000.0) / MAX_SPEED;
-			if (i < 14) {
-				filter[i++] = rev;
-				return rev;
-			} else {
-				double[] temp = new double[15];
-				for (int j = 1; j < 15; j++) {
-					filter[j - 1] = filter[j];
-					temp[j - 1] = filter[j - 1];
-				}
-				filter[14] = rev;
-				temp[14] = rev;
-				Arrays.sort(temp);
-				return temp[7];
-			}
+
+			return m_lpf.calculate(rev);
+			/*
+			 * if (i < 14) { filter[i++] = rev; return rev; } else { double[]
+			 * temp = new double[15]; for (int j = 1; j < 15; j++) { filter[j -
+			 * 1] = filter[j]; temp[j - 1] = filter[j - 1]; } filter[14] = rev;
+			 * temp[14] = rev; Arrays.sort(temp); return temp[7]; }
+			 */
 
 		}
 	}
@@ -167,14 +163,16 @@ public class Shooter {
 		lastPWMValue = -speed;
 		m_shooterMotor.set(speed);
 
-		SmartDashboard.putDouble("Speed Set", speed);
-		SmartDashboard.putDouble("RPM", getRPM());
 	}
 
 	public void set(double speed) {
 		speed = m_lpf.calculate(speed);
 		m_shooterMotor.set(speed);
+	}
 
+	public void setPD(double p, double i, double d) {
+		// From analog
+		m_pc.setPID(p * 10.0 * MAGIC, i * MAGIC, d * 10 * MAGIC);
 	}
 
 }
