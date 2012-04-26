@@ -15,9 +15,8 @@ public class DriveWithGameController extends CommandBase {
 	private DriverStation m_ds;
 	private double m_speedlimit = 1;
 
-	private final static double LOW = 0.36;
-	private final static double MEDIUM = 0.55;
-	private final static double HIGH = 0.75;
+	private final static int KEY = 1800;
+	private final static int FENDER = 1400;
 
 	public static String log = "";
 
@@ -85,21 +84,19 @@ public class DriveWithGameController extends CommandBase {
 	}
 
 	protected void processConveyorShooter() {
-		double shooterSpeed = 0;
-		double shooterRPM = 0;
-		if (m_gc.getButton(GameController.BTN_X)) shooterRPM = 100;
+		int shooterRPM = 0;
+		double shooterSpeed = 0.0;
+		if (m_gc.getButton(GameController.BTN_X)) shooterRPM = KEY;
+		if (m_gc.getButton(GameController.BTN_Y)) shooterRPM = FENDER;
+		if (m_gc.getButton(GameController.BTN_A)) shooterSpeed = 0.75;
+		if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = 1.0;
+		if (shooterRPM > 0) {
+			shooter.setTargetSpeed(shooterRPM);
+			shooter.shoot();
+		} else if (shooterSpeed > 0.1) {
+			shooter.set(-shooterSpeed);
+		}
 
-		shooter.setTargetSpeed(shooterRPM);
-		shooter.shoot();
-		/*
-		 * if (m_gc.getButton(GameController.BTN_A)) shooterSpeed = MEDIUM; else
-		 * if (m_gc.getButton(GameController.BTN_B)) shooterSpeed = HIGH; else
-		 * if (m_gc.getButton(GameController.BTN_Y)) shooterSpeed =
-		 * m_ds.getAnalogIn(3) / 5.0;
-		 * 
-		 * 
-		 * shooter.set(-shooterSpeed);
-		 */
 		if (shooterRPM > 0 && shooter.isShooterReady())
 			conveyor.reverse();
 		else if (!shooter.isBallThere())

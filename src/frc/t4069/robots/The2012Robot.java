@@ -102,7 +102,7 @@ public class The2012Robot extends IterativeRobot {
 			break;
 			case MODE_FEED:
 				if (new Date().getTime() - m_autostarttime < 2000)
-					CommandBase.pickupArm.setArm(0.5);
+					CommandBase.pickupArm.setArm(0.4);
 			break;
 			case MODE_CLOSESHOOT:
 				long time = new Date().getTime();
@@ -123,7 +123,6 @@ public class The2012Robot extends IterativeRobot {
 		Logger.i("Disabled!");
 		SmartDashboard.putString("Autonomous", "Ended");
 		CommandBase.shooter.disablePID();
-		CommandBase.shooter.problemflag = false;
 	}
 
 	public void disabledPeriodic() {

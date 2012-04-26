@@ -2,6 +2,8 @@ package frc.t4069.robots.subsystems;
 
 import java.util.Date;
 
+import com.sun.squawk.util.Arrays;
+
 import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -25,22 +27,20 @@ public class Shooter {
 	private EncoderOutput m_encoderoutput;
 	private double lastPWMValue = 0;
 
-	private final static int TICK_COUNT = 250;
-
-	// private final static double MAGIC = 1.9231e-04;
+	private final static double MAGIC = 1.9231e-04;
 	private final static int MAX_SPEED = 5000;
-	private final static double MAGIC = 1.0;
-	private static double p = 1 * MAGIC;
-	private static double i = 1 * MAGIC;
-	private static double d = 1 * MAGIC;
+	private static double p = 1.0 * MAGIC;
+	private static double i = 0.0 * MAGIC;
+	private static double d = 0.0 * MAGIC;
 
-	public static double[] ps = { 0, 0, 0 };
-	private static double[] dp = { 1, 1, 1 }; // p, i, d
+	public static double[] ps = { 0, 0, 0 }; // p, i, d
 
 	class RPMEncoder implements PIDSource {
 		private Encoder m_encoder;
 		private long lastTime = -1337;
 		private int lastValue = 0;
+		private double[] filter = new double[15];
+		private int i = 0;
 
 		public RPMEncoder(Encoder encoder) {
 			m_encoder = encoder;
@@ -63,7 +63,22 @@ public class Shooter {
 				lastValue = 0;
 			}
 			double rev = deltaValue / 250.0;
-			return rev / (deltaTime / 60000.0) / MAX_SPEED;
+			rev = rev / (deltaTime / 60000.0) / MAX_SPEED;
+			if (i < 14) {
+				filter[i++] = rev;
+				return rev;
+			} else {
+				double[] temp = new double[15];
+				for (int j = 1; j < 15; j++) {
+					filter[j - 1] = filter[j];
+					temp[j - 1] = filter[j - 1];
+				}
+				filter[14] = rev;
+				temp[14] = rev;
+				Arrays.sort(temp);
+				return temp[7];
+			}
+
 		}
 	}
 
@@ -71,8 +86,8 @@ public class Shooter {
 		public double value = 0;
 
 		public void pidWrite(double output) {
-			System.out.println("Writing PID! " + output);
 			value = output;
+
 		}
 	}
 
@@ -134,71 +149,6 @@ public class Shooter {
 
 	private double setrpm;
 
-	private int itercount = 0;
-	private final static int block = 300;
-	private double avgErr = Double.POSITIVE_INFINITY;
-	private double bestErr = Double.POSITIVE_INFINITY;
-	private boolean collect = false;
-	private int lastTwiddler = 0;
-	private int mode = 0;
-	private double[] errors = new double[block];
-	private int lasti = 0;
-
-	public boolean twiddle() {
-
-		double sum = 0.0;
-		for (int i = 0; i < 3; i++)
-			sum += dp[i];
-
-		if (collect) {
-			errors[lasti] = getPIDOutput() - setrpm;
-			lasti++;
-		}
-
-		if (itercount % (block * 2) == 0) {
-			if (sum > 0.0001) {
-				System.out.print("Twiddling! ");
-				collect = false;
-				double s = 0.0;
-				for (int i = 0; i < lasti; i++)
-					s += errors[i];
-				avgErr = s / lasti;
-				lasti = 0;
-				if (avgErr < bestErr) {
-					bestErr = avgErr;
-					dp[lastTwiddler] *= 1.1;
-				} else
-					switch (mode) {
-						case 0:
-							ps[lastTwiddler] -= 2 * dp[lastTwiddler];
-							mode = 1;
-						break;
-						case 1:
-							dp[lastTwiddler] *= 0.9;
-							ps[lastTwiddler] += dp[lastTwiddler];
-							mode = 0;
-						break;
-					}
-
-				lastTwiddler++;
-				lastTwiddler %= 3;
-				avgErr = 0;
-				ps[lastTwiddler] += dp[lastTwiddler];
-				m_pc.setPID(ps[0] * MAGIC, ps[1] * MAGIC, ps[2] * MAGIC);
-				System.out.println("P: " + ps[0] + " I: " + ps[1] + "D: "
-						+ ps[2]);
-			} else {
-				SmartDashboard.putDouble("p", ps[0]);
-				SmartDashboard.putDouble("i", ps[1]);
-				SmartDashboard.putDouble("d", ps[2]);
-				return true;
-			}
-
-		} else if (itercount % block == 0) collect = true;
-		itercount++;
-		return false;
-	}
-
 	public double getVoltage() {
 		return 2 * m_voltagesensor.getAverageVoltage();
 	}
@@ -211,21 +161,14 @@ public class Shooter {
 		return !m_sensor.get();
 	}
 
-	public boolean problemflag = false;
-
 	public void shoot() {
-		SmartDashboard.putBoolean("Problem Flag", problemflag);
 		SmartDashboard.putDouble("Target RPM", m_pc.getSetpoint());
-		if (!problemflag) {
-			double speed = -(lastPWMValue + getPIDOutput());
-			lastPWMValue = -speed;
-			m_shooterMotor.set(speed);
+		double speed = -(lastPWMValue + getPIDOutput());
+		lastPWMValue = -speed;
+		m_shooterMotor.set(speed);
 
-			SmartDashboard.putDouble("Speed Set", speed);
-			SmartDashboard.putDouble("RPM", getRPM());
-			twiddle();
-		} else
-			m_shooterMotor.set(0);
+		SmartDashboard.putDouble("Speed Set", speed);
+		SmartDashboard.putDouble("RPM", getRPM());
 	}
 
 	public void set(double speed) {
