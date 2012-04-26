@@ -47,7 +47,7 @@ public class The2012Robot extends IterativeRobot {
 	int lastStatusSustained = 0;
 	boolean lastStatus = false;
 	long lastRecognized;
-	private static double AUTOSPEED = 0.35;
+	private static double AUTOSPEED = 0.30;
 	private static double CLOSEAUTOSPEED = 0.225;
 
 	private final static int MODE_SHOOT = 0;
@@ -61,7 +61,7 @@ public class The2012Robot extends IterativeRobot {
 		switch (MODE) {
 			case MODE_SHOOT:
 				long currentTime = new Date().getTime();
-				if (ballsShot == 4) {
+				if (ballsShot == 2) {
 					if (currentTime - lastRecognized < delayTime) {
 
 						CommandBase.shooter.set(-AUTOSPEED);
@@ -72,15 +72,15 @@ public class The2012Robot extends IterativeRobot {
 						SmartDashboard.putString("Autonomous", "Ended");
 						CommandBase.shooter.set(0);
 					}
-				} else if (ballsShot < 4) {
+				} else if (ballsShot < 2) {
 					SmartDashboard.putString("Autonomous", "In progress");
 					boolean thisStatus = CommandBase.shooter.isBallThere();
 					if (thisStatus) {
 						lastStatusSustained++;
-						if (currentTime - m_autostarttime > 3000)
+						if (currentTime - m_autostarttime > 2000)
 							CommandBase.conveyor.reverse();
 
-					} else if (currentTime - m_autostarttime > 3000)
+					} else if (currentTime - m_autostarttime > 2000)
 						CommandBase.conveyor.reverse();
 
 					CommandBase.shooter.set(-AUTOSPEED);
@@ -91,7 +91,7 @@ public class The2012Robot extends IterativeRobot {
 							m_autostarttime = new Date().getTime();
 						}
 						lastStatusSustained = 0;
-						if (ballsShot == 4)
+						if (ballsShot == 2)
 							lastRecognized = new Date().getTime();
 					}
 					lastStatus = thisStatus;
