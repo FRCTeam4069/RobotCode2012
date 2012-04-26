@@ -29,11 +29,9 @@ public class Shooter {
 
 	private final static int MAX_SPEED = 5000;
 
-	private static double p = 40.0 * MAGIC;
+	private static double p = 24.0 * MAGIC;
 	private static double i = 0.0 * MAGIC;
-	private static double d = 0.2 * MAGIC;
-
-	public static double[] ps = { 0, 0, 0 }; // p, i, d
+	private static double d = 6.0 * MAGIC;
 
 	class RPMEncoder implements PIDSource {
 		private Encoder m_encoder;

@@ -1,5 +1,7 @@
 package frc.t4069.robots.commands;
 
+import java.util.Date;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,18 +34,32 @@ public class DriveWithGameController extends CommandBase {
 		m_ds = DriverStation.getInstance();
 	}
 
+	private long m_shooterStart;
+
 	protected void execute() {
 		double sensitivity = 1;
 		m_gc.tick();
 
+		EventHandler delayHandler = new EventHandler() {
+			public void buttonDown() {
+				m_shooterStart = new Date().getTime();
+			}
+		};
+
 		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
 			public void buttonUp() {
 				if (m_speedlimit == 1)
-					m_speedlimit = 0.65;
+					m_speedlimit = 0.7;
 				else
 					m_speedlimit = 1;
 			}
 		});
+
+		m_gc.addButtonHandler(GameController.BTN_A, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_B, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_Y, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_X, delayHandler);
+
 		SmartDashboard.putBoolean("RightButton3",
 				m_joystickRight.getRawButton(3));
 
@@ -83,15 +99,20 @@ public class DriveWithGameController extends CommandBase {
 		cameraMount.setPan(x);
 	}
 
+	private boolean m_lastBallStatus = false;
+
 	protected void processConveyorShooter() {
 		int shooterRPM = 0;
 		double shooterSpeed = 0.0;
-		if (m_gc.getButton(GameController.BTN_X))
-			shooterRPM = KEY;
-		else if (m_gc.getButton(GameController.BTN_Y))
+		System.out.println("X" + m_gc.getButton(GameController.BTN_X));
+		if (m_gc.getButton(GameController.BTN_X)) {
 			shooterRPM = FENDER;
+			System.out.println("Test");
+		}
+		else if (m_gc.getButton(GameController.BTN_Y))
+			shooterRPM = (int) DriverStation.getInstance().getAnalogIn(4) * 1000;
 		else if (m_gc.getButton(GameController.BTN_A))
-			shooterSpeed = 0.75;
+			shooterRPM = KEY;
 		else if (m_gc.getButton(GameController.BTN_B))
 			shooterSpeed = 1.0;
 		else {
@@ -99,6 +120,7 @@ public class DriveWithGameController extends CommandBase {
 			shooterRPM = 0;
 		}
 
+		System.out.println("RPM: " + shooterRPM);
 		if (shooterRPM > 0) {
 			shooter.setTargetSpeed(shooterRPM);
 			shooter.shoot();
@@ -108,10 +130,23 @@ public class DriveWithGameController extends CommandBase {
 			shooter.set(0);
 		}
 
-		if ((shooterRPM > 0 || shooterSpeed > 0) && shooter.isShooterReady())
+		if (m_joystickLeft.getRawButton(6))
 			conveyor.reverse();
-		else if (!shooter.isBallThere())
+		else if (m_joystickLeft.getRawButton(7))
+			conveyor.forward();
+		else if (shooterRPM > 0 && shooter.isShooterReady())
 			conveyor.reverse();
+		else if (shooterSpeed > 0.1
+				&& new Date().getTime() - m_shooterStart > 3000) {
+			boolean thisStatus = shooter.isBallThere();
+			if (m_lastBallStatus && !thisStatus)
+				m_shooterStart = new Date().getTime();
+			m_lastBallStatus = thisStatus;
+			conveyor.reverse();
+		} else if (!shooter.isBallThere() && m_joystickLeft.getRawButton(3))
+			conveyor.reverse();
+		else if (m_joystickLeft.getRawButton(2))
+			conveyor.forward();
 		else
 			conveyor.stop();
 

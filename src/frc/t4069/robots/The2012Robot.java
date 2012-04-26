@@ -51,8 +51,8 @@ public class The2012Robot extends IterativeRobot {
 	private static double AUTOSPEED = 0.30;
 	private static double CLOSEAUTOSPEED = 0.1;
 
-	private static double KEY_RPM = 2000;
-	private static double FENDER_RPM = 1000;
+	private static int KEY = 1875;
+	private static int FENDER_RPM = 1500;
 
 	private long m_autostarttime;
 
@@ -60,14 +60,16 @@ public class The2012Robot extends IterativeRobot {
 	private final static int MODE_FEED = 1;
 	private int MODE = MODE_SHOOT;
 
+	private final static int NUMBER_OF_SHOTS = 2;
+
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		switch (MODE) {
 			case MODE_SHOOT:
-				if (ballsShot == 2) {
-					if (new Date().getTime() - lastRecognized < 2000) {
-
-						CommandBase.shooter.set(-AUTOSPEED);
+				CommandBase.shooter.setTargetSpeed(KEY);
+				if (ballsShot == NUMBER_OF_SHOTS) {
+					if (new Date().getTime() - lastRecognized < 4000) {
+						CommandBase.shooter.shoot();
 						CommandBase.conveyor.reverse();
 						SmartDashboard.putString("Autonomous",
 								"Spin down in 2 seconds");
@@ -75,28 +77,29 @@ public class The2012Robot extends IterativeRobot {
 						SmartDashboard.putString("Autonomous", "Ended");
 						CommandBase.shooter.set(0);
 					}
-				} else if (ballsShot < 2) {
+
+				} else if (ballsShot < NUMBER_OF_SHOTS) {
 					SmartDashboard.putString("Autonomous", "In progress");
 					boolean thisStatus = CommandBase.shooter.isBallThere();
 					if (thisStatus) {
 						lastStatusSustained++;
-						double percent = CommandBase.shooter.getVoltage() / 12.0;
-						if (percent > AUTOSPEED - (AUTOSPEED * 0.1))
+						if (CommandBase.shooter.isShooterReady())
 							CommandBase.conveyor.reverse();
-
-					} else
+					} else {
 						CommandBase.conveyor.reverse();
-					CommandBase.shooter.set(-AUTOSPEED);
+					}
+					CommandBase.shooter.shoot();
 
 					if (lastStatus && !thisStatus) {
 						if (lastStatusSustained > 4) ballsShot++;
 						lastStatusSustained = 0;
-						if (ballsShot == 2)
+						if (ballsShot == NUMBER_OF_SHOTS)
 							lastRecognized = new Date().getTime();
 					}
 					lastStatus = thisStatus;
 				}
 			break;
+
 			case MODE_FEED:
 				if (new Date().getTime() - m_autostarttime < 2000)
 					CommandBase.pickupArm.setArm(0.4);
@@ -108,6 +111,7 @@ public class The2012Robot extends IterativeRobot {
 	public void disabledInit() {
 		Logger.i("Disabled!");
 		SmartDashboard.putString("Autonomous", "Ended");
+		CommandBase.shooter.setTargetSpeed(0);
 		CommandBase.shooter.disablePID();
 	}
 
