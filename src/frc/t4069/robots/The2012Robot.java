@@ -2,7 +2,6 @@ package frc.t4069.robots;
 
 import java.util.Date;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -42,23 +41,22 @@ public class The2012Robot extends IterativeRobot {
 
 	public void autonomousInit() {
 		m_autostarttime = new Date().getTime();
+		CommandBase.shooter.enablePID();
 	}
 
 	int ballsShot = 0;
 	int lastStatusSustained = 0;
 	boolean lastStatus = false;
 	long lastRecognized;
-	private static double AUTOSPEED = 0.30;
-	private static double CLOSEAUTOSPEED = 0.1;
 
-	private static int KEY = 1875;
-	private static int FENDER_RPM = 1500;
+	private final static int KEY = 1900;
 
 	private long m_autostarttime;
 
 	private final static int MODE_SHOOT = 0;
 	private final static int MODE_FEED = 1;
 	private int MODE = MODE_SHOOT;
+	private final static int DELAY = 0;
 
 	private final static int NUMBER_OF_SHOTS = 2;
 
@@ -76,43 +74,47 @@ public class The2012Robot extends IterativeRobot {
 					} else {
 						SmartDashboard.putString("Autonomous", "Ended");
 						CommandBase.shooter.set(0);
+						CommandBase.conveyor.stop();
 					}
 
 				} else if (ballsShot < NUMBER_OF_SHOTS) {
 					SmartDashboard.putString("Autonomous", "In progress");
 					boolean thisStatus = CommandBase.shooter.isBallThere();
-					if (thisStatus) {
-						lastStatusSustained++;
-						if (CommandBase.shooter.isShooterReady())
-							CommandBase.conveyor.reverse();
-					} else {
-						CommandBase.conveyor.reverse();
-					}
+					if (thisStatus) lastStatusSustained++;
 					CommandBase.shooter.shoot();
-
 					if (lastStatus && !thisStatus) {
-						if (lastStatusSustained > 4) ballsShot++;
-						lastStatusSustained = 0;
-						if (ballsShot == NUMBER_OF_SHOTS)
+						if (lastStatusSustained > 4) {
+							ballsShot++;
 							lastRecognized = new Date().getTime();
+						}
+						lastStatusSustained = 0;
 					}
+					if (CommandBase.shooter.isShooterReady(0.03))
+						CommandBase.conveyor.reverse();
+					else
+						CommandBase.conveyor.stop();
 					lastStatus = thisStatus;
 				}
+
 			break;
 
 			case MODE_FEED:
 				if (new Date().getTime() - m_autostarttime < 2000)
 					CommandBase.pickupArm.setArm(0.4);
 			break;
+
 		}
 
+		SmartDashboard.putInt("Balls Shot", ballsShot);
+		SmartDashboard.putDouble("RPM", CommandBase.shooter.getRPM());
 	}
 
 	public void disabledInit() {
 		Logger.i("Disabled!");
 		SmartDashboard.putString("Autonomous", "Ended");
 		CommandBase.shooter.setTargetSpeed(0);
-		CommandBase.shooter.disablePID();
+		CommandBase.shooter.resetPID();
+		CommandBase.shooter.resetShooterSustain();
 	}
 
 	public void disabledPeriodic() {
@@ -127,9 +129,9 @@ public class The2012Robot extends IterativeRobot {
 		SmartDashboard.putString("Autonomous", "Ended");
 		driveWithController.start();
 		CommandBase.shooter.enablePID();
-		CommandBase.shooter.setPD(DriverStation.getInstance().getAnalogIn(1),
-				DriverStation.getInstance().getAnalogIn(3),
-				DriverStation.getInstance().getAnalogIn(2));
+		// CommandBase.shooter.setPD(DriverStation.getInstance().getAnalogIn(1),
+		// DriverStation.getInstance().getAnalogIn(3),
+		// DriverStation.getInstance().getAnalogIn(2));
 	}
 
 	/**

@@ -25,12 +25,12 @@ public class Shooter {
 	private EncoderOutput m_encoderoutput;
 	private double lastPWMValue = 0;
 
-	private final static double MAGIC = 0.001;
+	private final static double MAGIC = 0.1;
 
 	private final static int MAX_SPEED = 5000;
 
 	private static double p = 24.0 * MAGIC;
-	private static double i = 0.0 * MAGIC;
+	private static double i = 1.0 * MAGIC;
 	private static double d = 6.0 * MAGIC;
 
 	class RPMEncoder implements PIDSource {
@@ -39,6 +39,7 @@ public class Shooter {
 		private int lastValue = 0;
 		private double[] filter = new double[15];
 		private int i = 0;
+		private double currentValue = 0.0;
 
 		private LowPassFilter m_lpf = new LowPassFilter(25);
 
@@ -65,7 +66,8 @@ public class Shooter {
 			double rev = deltaValue / 250.0;
 			rev = rev / (deltaTime / 60000.0) / MAX_SPEED;
 
-			return m_lpf.calculate(rev);
+			currentValue = m_lpf.calculate(rev);
+			return currentValue;
 			/*
 			 * if (i < 14) { filter[i++] = rev; return rev; } else { double[]
 			 * temp = new double[15]; for (int j = 1; j < 15; j++) { filter[j -
@@ -86,7 +88,7 @@ public class Shooter {
 	}
 
 	public double getRPM() {
-		return m_encoderpidsource.pidGet() * MAX_SPEED;
+		return m_encoderpidsource.currentValue * MAX_SPEED;
 	}
 
 	public Encoder getEncoder() {
@@ -128,6 +130,10 @@ public class Shooter {
 		m_pc.disable();
 	}
 
+	public void resetPID() {
+		m_pc.reset();
+	}
+
 	public void setTargetSpeed(double rpm) {
 		m_pc.setSetpoint(rpm / MAX_SPEED);
 		setrpm = rpm;
@@ -147,8 +153,39 @@ public class Shooter {
 		return 2 * m_voltagesensor.getAverageVoltage();
 	}
 
+	boolean lastShooterStatus = false;
+	int shooterSustained = 0;
+	int shooterNotSustained = 0;
+
 	public boolean isShooterReady() {
-		return m_pc.onTarget();
+		return isShooterReady(0.03);
+	}
+
+	public boolean isShooterReady(double tolerance) {
+		boolean thisStatus = Math.abs(setrpm - m_encoderpidsource.currentValue
+				* MAX_SPEED)
+				/ setrpm < tolerance;
+		if (thisStatus) {
+			shooterSustained++;
+			if (shooterSustained > 15) {
+				shooterNotSustained = 0;
+				return true;
+			}
+		}
+		lastShooterStatus = thisStatus;
+		if (!lastShooterStatus) {
+			shooterNotSustained++;
+			if (shooterNotSustained > 15) {
+				shooterSustained = 0;
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public void resetShooterSustain() {
+		shooterSustained = 0;
+		shooterNotSustained = 0;
 	}
 
 	public boolean isBallThere() {
@@ -157,7 +194,8 @@ public class Shooter {
 
 	public void shoot() {
 		SmartDashboard.putDouble("Target RPM", m_pc.getSetpoint());
-		double speed = -(lastPWMValue + getPIDOutput());
+		// double speed = -(lastPWMValue + getPIDOutput());
+		double speed = -getPIDOutput();
 		lastPWMValue = -speed;
 		m_shooterMotor.set(speed);
 

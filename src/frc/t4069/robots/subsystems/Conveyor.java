@@ -11,11 +11,11 @@ public class Conveyor {
 	}
 
 	public void forward() { // It's flipped
-		// m_victor.set(-0.6);
+		m_victor.set(0.6);
 	}
 
 	public void reverse() {
-		// m_victor.set(0.6);
+		m_victor.set(-0.6);
 	}
 
 	public void stop() {
