@@ -1,9 +1,16 @@
 package frc.t4069.robots.subsystems;
 
+import java.util.Date;
+
 import edu.wpi.first.wpilibj.AnalogChannel;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.t4069.robots.RobotMap;
 import frc.t4069.utils.math.LowPassFilter;
 
@@ -12,27 +19,192 @@ public class Shooter {
 	private Victor m_shooterMotor;
 	private AnalogChannel m_voltagesensor;
 	private LowPassFilter m_lpf;
-	private String log = "";
+	private Encoder m_encoder;
+	private PIDController m_pc;
+	private RPMEncoder m_encoderpidsource;
+	private EncoderOutput m_encoderoutput;
+	private double lastPWMValue = 0;
 
-	private boolean m_shootingInProgress = false;
+	private final static double MAGIC = 0.1;
+
+	private final static int MAX_SPEED = 5000;
+
+	private static double p = 24.0 * MAGIC;
+	private static double i = 1.0 * MAGIC;
+	private static double d = 6.0 * MAGIC;
+
+	class RPMEncoder implements PIDSource {
+		private Encoder m_encoder;
+		private long lastTime = -1337;
+		private int lastValue = 0;
+		private double[] filter = new double[15];
+		private int i = 0;
+		private double currentValue = 0.0;
+
+		private LowPassFilter m_lpf = new LowPassFilter(25);
+
+		public RPMEncoder(Encoder encoder) {
+			m_encoder = encoder;
+		}
+
+		public double pidGet() {
+			if (lastTime == -1337) {
+				lastTime = new Date().getTime();
+				lastValue = 0;
+				return 0;
+			}
+			long ct = new Date().getTime();
+			double deltaTime = ct - lastTime;
+			lastTime = ct;
+			int thisValue = m_encoder.get();
+			int deltaValue = thisValue - lastValue;
+			lastValue = thisValue;
+			if (lastValue > 2000000000) {
+				m_encoder.reset();
+				lastValue = 0;
+			}
+			double rev = deltaValue / 250.0;
+			rev = rev / (deltaTime / 60000.0) / MAX_SPEED;
+
+			currentValue = m_lpf.calculate(rev);
+			return currentValue;
+			/*
+			 * if (i < 14) { filter[i++] = rev; return rev; } else { double[]
+			 * temp = new double[15]; for (int j = 1; j < 15; j++) { filter[j -
+			 * 1] = filter[j]; temp[j - 1] = filter[j - 1]; } filter[14] = rev;
+			 * temp[14] = rev; Arrays.sort(temp); return temp[7]; }
+			 */
+
+		}
+	}
+
+	class EncoderOutput implements PIDOutput {
+		public double value = 0;
+
+		public void pidWrite(double output) {
+			value = output;
+
+		}
+	}
+
+	public double getRPM() {
+		return m_encoderpidsource.currentValue * MAX_SPEED;
+	}
+
+	public Encoder getEncoder() {
+		return m_encoder;
+	}
 
 	public Shooter() {
 		m_shooterMotor = new Victor(RobotMap.SHOOTER_MOTOR);
 		m_voltagesensor = new AnalogChannel(RobotMap.SHOOTER_VOLTAGE_DETECTOR);
 		m_sensor = new DigitalInput(RobotMap.PHOTOELECTRIC_SENSOR);
 		m_lpf = new LowPassFilter(50);
+		m_encoder = new Encoder(RobotMap.ENCODER_A, RobotMap.ENCODER_B, false,
+				CounterBase.EncodingType.k1X);
+
+		m_encoderpidsource = new RPMEncoder(m_encoder);
+		m_encoderoutput = new EncoderOutput();
+
+		m_encoder.start();
+		m_encoder.reset();
+		m_pc = new PIDController(p, i, d, m_encoderpidsource, m_encoderoutput);
+		m_pc.setOutputRange(-1, 1);
+		m_pc.setTolerance(1.5);
+
 	}
+
+	public void resetEncoder() {
+		m_encoder.reset();
+	}
+
+	public double getPIDOutput() {
+		return m_encoderoutput.value;
+	}
+
+	public void enablePID() {
+		m_pc.enable();
+	}
+
+	public void disablePID() {
+		m_pc.disable();
+	}
+
+	public void resetPID() {
+		m_pc.reset();
+	}
+
+	public void setTargetSpeed(double rpm) {
+		m_pc.setSetpoint(rpm / MAX_SPEED);
+		setrpm = rpm;
+	}
+
+	public double getRate() {
+		return m_encoder.getRate();
+	}
+
+	public double getTargetSpeed() {
+		return setrpm;
+	}
+
+	private double setrpm;
 
 	public double getVoltage() {
 		return 2 * m_voltagesensor.getAverageVoltage();
 	}
 
+	boolean lastShooterStatus = false;
+	int shooterSustained = 0;
+	int shooterNotSustained = 0;
+
 	public boolean isShooterReady() {
-		return (getVoltage() > (DriverStation.getInstance().getBatteryVoltage() * 0.8));
+		return isShooterReady(0.03);
+	}
+
+	public boolean isShooterReady(double tolerance) {
+		boolean thisStatus = Math.abs(setrpm - m_encoderpidsource.currentValue
+				* MAX_SPEED)
+				/ setrpm < tolerance;
+		if (thisStatus) {
+			shooterSustained++;
+			if (shooterSustained > 15) {
+				shooterNotSustained = 0;
+				return true;
+			}
+		}
+		lastShooterStatus = thisStatus;
+		if (!lastShooterStatus) {
+			shooterNotSustained++;
+			if (shooterNotSustained > 15) {
+				shooterSustained = 0;
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public void resetShooterSustain() {
+		shooterSustained = 0;
+		shooterNotSustained = 0;
+	}
+
+	private final static double TARGET_TOLERANCE = 0.01;
+
+	public boolean isShooterReady(int targetRPM) {
+		return (targetRPM * (1 - TARGET_TOLERANCE) >= getRPM());
 	}
 
 	public boolean isBallThere() {
 		return !m_sensor.get();
+	}
+
+	public void shoot() {
+		SmartDashboard.putDouble("Target RPM", m_pc.getSetpoint());
+		// double speed = -(lastPWMValue + getPIDOutput());
+		double speed = -getPIDOutput();
+		lastPWMValue = -speed;
+		m_shooterMotor.set(speed);
+
 	}
 
 	public void set(double speed) {
@@ -40,21 +212,9 @@ public class Shooter {
 		m_shooterMotor.set(speed);
 	}
 
-	public void shoot() {
-		if (isBallThere()) m_shootingInProgress = true;
-	}
-
-	public boolean isShooting() {
-		boolean ballThere = isBallThere();
-		if (m_shootingInProgress && ballThere)
-			return true;
-		else if (m_shootingInProgress && !ballThere)
-			m_shootingInProgress = false;
-		return false;
-	}
-
-	public boolean shootingInProgress() {
-		return m_shootingInProgress;
+	public void setPD(double p, double i, double d) {
+		// From analog
+		m_pc.setPID(p * 10.0 * MAGIC, i * MAGIC, d * 10 * MAGIC);
 	}
 
 }

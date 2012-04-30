@@ -22,7 +22,9 @@
     explanations, see the file ${sunspot.home}/default.properties.
 
     -->
-
+    <property name="sunspot.home" value="/home/shuhao/eclipse/plugins/edu.wpi.first.javadev.sunspotfrcsdk_1.0.7.1/sunspotfrcsdk" />
+<property name="remoteaddress" value="10.40.69.2" />
+<property name="wpilibj.home" value="/home/shuhao/eclipse/plugins/edu.wpi.first.javadev.sunspotfrcsdk_1.0.7.1/sunspotfrcsdk/lib/WPILibJ" />
     <property name="user.properties.file" value="build.properties"/>
     <property file="${user.home}/.sunspotfrc.properties"/>
     <import file="${sunspot.home}/build.xml"/>
@@ -60,7 +62,7 @@
       debug-proxy-run        start the proxy for the high-level debugger
 
     Some useful command line properties:
-              	
+                
       -Dbasestation.addr=1234   set the address of the basestation
       -DremoteId=1234           set the target for remote run/deploy/debug-proxy-run
       -Dsquawk.startup.class=com.example.MyStartUp
@@ -70,7 +72,7 @@
       -Dmidlet=2                select a midlet to run for selectapplication
                                 or deploy targets (defaults to 1)
       -Dutility.jars=utils.jar  a classpath separator delimited list of jars to be 
-              	                included with the application
+                                included with the application
 
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 

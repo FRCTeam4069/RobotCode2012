@@ -18,13 +18,14 @@ public class BallPickupArm {
 
 	public BallPickupArm() {
 		m_armMotor = new Victor(RobotMap.PICKUP_ARM_MOTOR);
-		m_roller = new Victor(RobotMap.PICKUP_ARM_ROLLER);
+		// m_roller = new Victor(RobotMap.PICKUP_ARM_ROLLER);
 		m_limitswitch1 = new DigitalInput(RobotMap.ARM_LIMITSWITCH);
 	}
 
 	public void runRoller(double speed) {
-		speed = m_rollerLPF.calculate(speed);
-		m_roller.set(speed);
+		/*
+		 * speed = m_rollerLPF.calculate(speed); m_roller.set(speed);
+		 */
 	}
 
 	public void setArm(double speed) {
