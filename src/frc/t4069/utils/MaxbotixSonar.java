@@ -2,6 +2,12 @@ package frc.t4069.utils;
 
 import edu.wpi.first.wpilibj.AnalogChannel;
 
+/**
+ * Sonar class that's never really tested.
+ * 
+ * @author Shuhao
+ * 
+ */
 public class MaxbotixSonar {
 
 	private AnalogChannel m_sonar;

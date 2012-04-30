@@ -5,17 +5,38 @@ import java.util.Hashtable;
 import edu.wpi.first.wpilibj.Joystick;
 import frc.t4069.utils.math.Point;
 
+/**
+ * Logitech game controller wrapper class
+ * 
+ * @author Shuhao
+ * 
+ */
 public class GameController {
 
+	/**
+	 * EventHandler.
+	 * 
+	 * @author shuhao
+	 * 
+	 */
 	public static class EventHandler {
+		/**
+		 * Handles when button is first pressed
+		 */
 		public void buttonDown() {
 
 		}
 
+		/**
+		 * Handles when button is released
+		 */
 		public void buttonUp() {
 
 		}
 
+		/**
+		 * Handles when button is held down.
+		 */
 		public void buttonHeld() {
 
 		}
@@ -54,14 +75,31 @@ public class GameController {
 		tick();
 	}
 
+	/**
+	 * Gets the trigger, which is left and right trigger. Left trigger is
+	 * negative and right trigger is positive. They range from 0 - 1 (absolute
+	 * values) and additive
+	 * 
+	 * @return The trigger value.
+	 */
 	public double getTrigger() {
 		return joystick.getRawAxis(3);
 	}
 
+	/**
+	 * Adds an event handler to a button.
+	 * 
+	 * @param button The button.
+	 * @param handler An event handler
+	 */
 	public void addButtonHandler(int button, EventHandler handler) {
 		m_handlers.put(new Integer(button), handler);
 	}
 
+	/**
+	 * Should be called from every teleop periodic to ensure event handler
+	 * works.
+	 */
 	public void tick() {
 		for (int i = 1; i <= 10; i++) {
 			boolean lastStatus = ((Boolean) m_thisButtonStatus.get(new Integer(

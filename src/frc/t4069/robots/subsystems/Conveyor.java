@@ -10,11 +10,11 @@ public class Conveyor {
 		m_victor = new Victor(RobotMap.CONVEYER);
 	}
 
-	public void forward() { // It's flipped
+	public void forward() { // Forward puts the balls down
 		m_victor.set(0.6);
 	}
 
-	public void reverse() {
+	public void reverse() { // Reverse rolls the balls up.
 		m_victor.set(-0.6);
 	}
 

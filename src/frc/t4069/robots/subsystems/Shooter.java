@@ -23,10 +23,9 @@ public class Shooter {
 	private PIDController m_pc;
 	private RPMEncoder m_encoderpidsource;
 	private EncoderOutput m_encoderoutput;
-	private double lastPWMValue = 0;
 
+	// PID Magic Constants
 	private final static double MAGIC = 0.1;
-
 	private final static int MAX_SPEED = 5000;
 
 	private static double p = 24.0 * MAGIC;
@@ -37,8 +36,6 @@ public class Shooter {
 		private Encoder m_encoder;
 		private long lastTime = -1337;
 		private int lastValue = 0;
-		private double[] filter = new double[15];
-		private int i = 0;
 		private double currentValue = 0.0;
 
 		private LowPassFilter m_lpf = new LowPassFilter(25);
@@ -68,13 +65,6 @@ public class Shooter {
 
 			currentValue = m_lpf.calculate(rev);
 			return currentValue;
-			/*
-			 * if (i < 14) { filter[i++] = rev; return rev; } else { double[]
-			 * temp = new double[15]; for (int j = 1; j < 15; j++) { filter[j -
-			 * 1] = filter[j]; temp[j - 1] = filter[j - 1]; } filter[14] = rev;
-			 * temp[14] = rev; Arrays.sort(temp); return temp[7]; }
-			 */
-
 		}
 	}
 
@@ -196,7 +186,6 @@ public class Shooter {
 		SmartDashboard.putDouble("Target RPM", m_pc.getSetpoint());
 		// double speed = -(lastPWMValue + getPIDOutput());
 		double speed = -getPIDOutput();
-		lastPWMValue = -speed;
 		m_shooterMotor.set(speed);
 
 	}
@@ -204,11 +193,6 @@ public class Shooter {
 	public void set(double speed) {
 		speed = m_lpf.calculate(speed);
 		m_shooterMotor.set(speed);
-	}
-
-	public void setPD(double p, double i, double d) {
-		// From analog
-		m_pc.setPID(p * 10.0 * MAGIC, i * MAGIC, d * 10 * MAGIC);
 	}
 
 }
