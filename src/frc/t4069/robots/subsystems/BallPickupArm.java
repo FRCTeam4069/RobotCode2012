@@ -23,8 +23,9 @@ public class BallPickupArm {
 	}
 
 	public void runRoller(double speed) {
-		// speed = m_rollerLPF.calculate(speed);
-		// m_roller.set(speed);
+		/*
+		 * speed = m_rollerLPF.calculate(speed); m_roller.set(speed);
+		 */
 	}
 
 	public void setArm(double speed) {

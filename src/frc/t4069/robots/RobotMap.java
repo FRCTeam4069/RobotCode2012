@@ -17,6 +17,7 @@ public class RobotMap {
 	public static final int CONVEYER = 5;
 	public static final int SHOOTER_VOLTAGE_DETECTOR = 1;
 	public static final int PHOTOELECTRIC_SENSOR = 1;
+
 	public static final int ENCODER_A = 9;
 	public static final int ENCODER_B = 10;
 }

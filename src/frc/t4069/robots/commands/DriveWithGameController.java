@@ -14,12 +14,10 @@ public class DriveWithGameController extends CommandBase {
 
 	private Joystick m_joystickRight;
 	private Joystick m_joystickLeft;
-	private DriverStation m_ds;
 	private double m_speedlimit = 1;
 
-	private final static double LOW = 0.36;
-	private final static double MEDIUM = 0.55;
-	private final static double HIGH = 0.75;
+	private final static int KEY = 1900;
+	private final static int FENDER = 1500;
 
 	public static String log = "";
 
@@ -32,25 +30,20 @@ public class DriveWithGameController extends CommandBase {
 		m_gc = oi.getController();
 		m_joystickLeft = oi.getLeftJoystick();
 		m_joystickRight = oi.getRightJoystick();
-		m_ds = DriverStation.getInstance();
 	}
 
 	private long m_shooterStart;
 
 	protected void execute() {
-		double sensitivity = m_ds.getAnalogIn(2) / 5.0;
 		m_gc.tick();
 
 		EventHandler delayHandler = new EventHandler() {
 			public void buttonDown() {
 				m_shooterStart = new Date().getTime();
+				shooter.resetPID();
+				shooter.enablePID();
 			}
 		};
-
-		m_gc.addButtonHandler(GameController.BTN_X, delayHandler);
-		m_gc.addButtonHandler(GameController.BTN_Y, delayHandler);
-		m_gc.addButtonHandler(GameController.BTN_A, delayHandler);
-		m_gc.addButtonHandler(GameController.BTN_B, delayHandler);
 
 		m_gc.addButtonHandler(GameController.BTN_START, new EventHandler() {
 			public void buttonUp() {
@@ -61,12 +54,17 @@ public class DriveWithGameController extends CommandBase {
 			}
 		});
 
+		m_gc.addButtonHandler(GameController.BTN_A, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_B, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_Y, delayHandler);
+		m_gc.addButtonHandler(GameController.BTN_X, delayHandler);
+
 		SmartDashboard.putBoolean("RightButton3",
 				m_joystickRight.getRawButton(3));
 
 		processCamera(m_gc);
 		processRoller();
-		processDriveTrain(m_gc, sensitivity);
+		processDriveTrain(m_gc);
 		processArm(m_gc);
 		processConveyorShooter();
 	}
@@ -83,13 +81,13 @@ public class DriveWithGameController extends CommandBase {
 		pickupArm.setArm(speed / (1.429));
 	}
 
-	protected void processDriveTrain(GameController gc, double turnSensitivity) {
+	protected void processDriveTrain(GameController gc) {
 		if (gc.getButton(GameController.BTN_RB)
 				|| gc.getButton(GameController.BTN_LB))
 			drivetrain.hardBreak();
 		else
 			drivetrain.arcadeDrive(m_speedlimit * gc.getTrigger(), m_speedlimit
-					* gc.getLeftStick().x * turnSensitivity);
+					* gc.getLeftStick().x);
 	}
 
 	protected void processCamera(GameController gc) {
@@ -103,22 +101,39 @@ public class DriveWithGameController extends CommandBase {
 	private boolean m_lastBallStatus = false;
 
 	protected void processConveyorShooter() {
-		double shooterSpeed = 0;
-		if (m_gc.getButton(GameController.BTN_X))
-			shooterSpeed = LOW;
-		else if (m_gc.getButton(GameController.BTN_A))
-			shooterSpeed = MEDIUM;
-		else if (m_gc.getButton(GameController.BTN_B))
-			shooterSpeed = HIGH;
+		int shooterRPM = 0;
+		double shooterSpeed = 0.0;
+		if (m_gc.getButton(GameController.BTN_X)) {
+			shooterRPM = FENDER;
+		}
 		else if (m_gc.getButton(GameController.BTN_Y))
-			shooterSpeed = m_ds.getAnalogIn(3) / 5.0;
+			shooterRPM = (int) (DriverStation.getInstance().getAnalogIn(4) * 1000.0);
+		else if (m_gc.getButton(GameController.BTN_A))
+			shooterRPM = KEY;
+		else if (m_gc.getButton(GameController.BTN_B))
+			shooterSpeed = 1.0;
+		else {
+			shooterSpeed = 0.0;
+			shooterRPM = 0;
+		}
 
-		shooter.set(-shooterSpeed);
+		System.out.println("RPM: " + shooterRPM);
+		if (shooterRPM > 0) {
+			shooter.setTargetSpeed(shooterRPM);
+			shooter.shoot();
+		} else if (shooterSpeed > 0.1) {
+			shooter.set(-shooterSpeed);
+		} else {
+			shooter.set(0);
+		}
+
 		if (m_joystickLeft.getRawButton(6))
 			conveyor.reverse();
 		else if (m_joystickLeft.getRawButton(7))
 			conveyor.forward();
-		else if (shooterSpeed > 0.1 && shooter.isShooterReady()
+		else if (shooterRPM > 0 && shooter.isShooterReady())
+			conveyor.reverse();
+		else if (shooterSpeed > 0.1
 				&& new Date().getTime() - m_shooterStart > 3000) {
 			boolean thisStatus = shooter.isBallThere();
 			if (m_lastBallStatus && !thisStatus)
@@ -127,9 +142,9 @@ public class DriveWithGameController extends CommandBase {
 			conveyor.reverse();
 		} else if (!shooter.isBallThere() && m_joystickLeft.getRawButton(3))
 			conveyor.reverse();
-		else if (m_joystickLeft.getRawButton(2))
+		else if (m_joystickLeft.getRawButton(2)) {
 			conveyor.forward();
-		else
+		} else
 			conveyor.stop();
 
 	}
