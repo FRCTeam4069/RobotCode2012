@@ -23,8 +23,8 @@
 
     -->
     <property name="sunspot.home" value="/home/shuhao/eclipse/plugins/edu.wpi.first.javadev.sunspotfrcsdk_1.0.7.1/sunspotfrcsdk" />
-<property name="remoteaddress" value="10.40.69.2" />
-<property name="wpilibj.home" value="/home/shuhao/eclipse/plugins/edu.wpi.first.javadev.sunspotfrcsdk_1.0.7.1/sunspotfrcsdk/lib/WPILibJ" />
+    <property name="remoteaddress" value="10.40.69.2" />
+    <property name="wpilibj.home" value="/home/shuhao/eclipse/plugins/edu.wpi.first.javadev.sunspotfrcsdk_1.0.7.1/sunspotfrcsdk/lib/WPILibJ" />
     <property name="user.properties.file" value="build.properties"/>
     <property file="${user.home}/.sunspotfrc.properties"/>
     <import file="${sunspot.home}/build.xml"/>
