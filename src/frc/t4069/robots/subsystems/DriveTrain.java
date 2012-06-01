@@ -28,7 +28,7 @@ public class DriveTrain {
 
 	private double m_limit = 1.0;
 	private double m_leftLimit = 1.0;
-	private double m_rightLimit = 0.971; // Right side is less powerful than the
+	private double m_rightLimit = 0.98; // Right side is less powerful than the
 											// left.
 
 	/**

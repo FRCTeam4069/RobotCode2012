@@ -45,6 +45,7 @@ public class The2012Robot extends IterativeRobot {
 		shooter = new Shooter();
 		conveyor = new Conveyor();
 		gc = new GameController(new Joystick(RobotMap.GCPORT));
+		joystick = new Joystick(RobotMap.JOYSTICKPORT);
 
 		// For knowing whose code is on the robot.
 		SmartDashboard.putString("Author", Version.author);
@@ -216,7 +217,6 @@ public class The2012Robot extends IterativeRobot {
 			shooterRPM = 0;
 		}
 
-		System.out.println("RPM: " + shooterRPM);
 		if (shooterRPM > 0) {
 			shooter.setTargetSpeed(shooterRPM);
 			shooter.shoot();
