@@ -35,6 +35,20 @@ Once you check out this repo, go into build.xml and remove the 25th and 27th
 line. This 2 lines is geared towards my computer and will fail if you try
 to deploy and run. 
 
+You also need to create a file, under `src/frc/t4069/robots`. The name of 
+the file is `Version.java`. Here's the content of this file (You can just
+use this or modify it if you wish):
+
+    package frc.t4069.robots;
+    public final class Version {
+      public static final String author = "Shuhao";
+      public static final String version = "final";
+    }
+
+The reason for this file is that it's to differentiate which version and
+which developer worked on this robot. SmartDashboard will print out the
+version and the author, so there's no confusion.
+
 Once that's done, save and hit FRC Deploy.
 
 Alternatively, you could change those 2 lines to your respective sunspot
